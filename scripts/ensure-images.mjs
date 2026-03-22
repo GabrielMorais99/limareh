@@ -6,6 +6,7 @@
  *
  * Nomes esperados em imgs/:
  * - capa.jpg (ou Capa.jpg / .jpeg)
+ * - capa-2x.jpg opcional (mesma foto em maior resolução para ecrãs HiDPI / srcset)
  * - jardim-de-cristal.png, produto-extra-1.png, produto-extra-2.png
  * - galeria-01.jpg, galeria-02.jpg (ou galera-NN com typo, ver findGallerySource)
  */
@@ -86,8 +87,24 @@ function findCapaSource() {
   return null;
 }
 
+function findCapa2xSource() {
+  const names = [
+    "capa-2x.jpg",
+    "capa@2x.jpg",
+    "Capa-2x.jpg",
+    "capa-2x.jpeg",
+    "capa@2x.jpeg",
+  ];
+  for (const name of names) {
+    const p = path.join(imgsDir, name);
+    if (fs.existsSync(p) && fs.statSync(p).size > 0) return p;
+  }
+  return null;
+}
+
 const TRACKED_FILES = [
   "capa.jpg",
+  "capa-2x.jpg",
   "jardim-de-cristal.png",
   "produto-extra-1.png",
   "produto-extra-2.png",
@@ -124,6 +141,16 @@ if (capaFrom) {
   const to = path.join(destDir, "capa.jpg");
   if (copyIfExists(capaFrom, to)) {
     console.log(`[ensure-images] capa.jpg ← ${path.relative(root, capaFrom)}`);
+  }
+}
+
+const capa2xFrom = findCapa2xSource();
+if (capa2xFrom) {
+  const to = path.join(destDir, "capa-2x.jpg");
+  if (copyIfExists(capa2xFrom, to)) {
+    console.log(
+      `[ensure-images] capa-2x.jpg ← ${path.relative(root, capa2xFrom)}`
+    );
   }
 }
 

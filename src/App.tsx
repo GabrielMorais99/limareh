@@ -1,12 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { GallerySection } from './components/GallerySection';
 import { InstagramIcon } from './components/InstagramIcon';
-import { useImgSlot } from './context/ImgsManifestContext';
+import { useImgsManifest, useImgSlot } from './context/ImgsManifestContext';
 import { INSTAGRAM_URL } from './lib/links';
 
 /**
  * Imagens em public/imgs (servidas em /imgs/...).
- * capa.jpg = hero; produto = *.png; galeria = galeria-01.jpg + galeria-02.jpg
+ * capa.jpg = hero (opcional capa-2x.jpg em imgs/ para Retina via srcset);
+ * produto = *.png; galeria = galeria-01.jpg + galeria-02.jpg
  */
 function imgUrl(file: string): string {
     const b = import.meta.env.BASE_URL || '/';
@@ -23,26 +24,27 @@ const NAV_SECTIONS = [
     { id: 'sobre', label: 'Sobre' },
     { id: 'produto', label: 'Produto' },
     { id: 'galeria', label: 'Galeria' },
-    { id: 'contato', label: 'Contato' },
 ] as const;
 
 type NavSectionId = (typeof NAV_SECTIONS)[number]['id'];
 
-function getElementDocumentTop(el: HTMLElement): number {
-    return el.getBoundingClientRect().top + window.scrollY;
-}
-
-function computeActiveNavSection(navBottomY: number): NavSectionId | null {
-    const line = window.scrollY + navBottomY + 1;
-    for (let i = NAV_SECTIONS.length - 1; i >= 0; i--) {
-        const { id } = NAV_SECTIONS[i];
+function computeActiveNavSection(navBottomViewport: number): NavSectionId | null {
+    /*
+     * Referência em coordenadas da viewport (base do nav fixo).
+     * scroll-mt nas secções faz o topo em documento ficar "atrás" da linha do nav;
+     * comparar só com offsetTop quebrava Sobre e saltava Galeria sem #galeria no DOM.
+     */
+    const bufferPx = 80;
+    let active: NavSectionId | null = null;
+    for (const { id } of NAV_SECTIONS) {
         const el = document.getElementById(id);
         if (!el) continue;
-        if (line >= getElementDocumentTop(el)) {
-            return id;
+        const top = el.getBoundingClientRect().top;
+        if (top <= navBottomViewport + bufferPx) {
+            active = id;
         }
     }
-    return null;
+    return active;
 }
 
 export default function App() {
@@ -51,10 +53,15 @@ export default function App() {
     const [navIndicator, setNavIndicator] = useState({ left: 0, width: 0 });
     const navRef = useRef<HTMLElement>(null);
     const navLinksRowRef = useRef<HTMLDivElement>(null);
-    const navLinkRefs = useRef<Partial<Record<NavSectionId, HTMLAnchorElement>>>(
-        {},
-    );
+    const navLinkRefs = useRef<
+        Partial<Record<NavSectionId, HTMLAnchorElement>>
+    >({});
+    const { status: imgsStatus, manifest: imgsManifest } = useImgsManifest();
     const capa = useImgSlot('capa.jpg');
+    const heroSrcSet =
+        imgsStatus === 'ok' && imgsManifest['capa-2x.jpg'] === true
+            ? `${imgHero} 1x, ${imgUrl('capa-2x.jpg')} 2x`
+            : undefined;
     const imgProdutoMain = useImgSlot('jardim-de-cristal.png');
     const imgExtra1 = useImgSlot('produto-extra-1.png');
     const imgExtra2 = useImgSlot('produto-extra-2.png');
@@ -91,11 +98,13 @@ export default function App() {
         });
         window.addEventListener('resize', updateActiveFromScroll);
         window.addEventListener('hashchange', updateActiveFromScroll);
+        window.addEventListener('scrollend', updateActiveFromScroll);
         return () => {
             clearTimeout(syncAfterPaint);
             window.removeEventListener('scroll', updateActiveFromScroll);
             window.removeEventListener('resize', updateActiveFromScroll);
             window.removeEventListener('hashchange', updateActiveFromScroll);
+            window.removeEventListener('scrollend', updateActiveFromScroll);
         };
     }, []);
 
@@ -251,11 +260,12 @@ export default function App() {
                         {capa.shouldRender ? (
                             <img
                                 alt="Limaréh — ambiente natural e sofisticado"
-                                className="h-full w-full object-cover object-center"
+                                className="h-full w-full min-h-full min-w-full object-cover object-center [image-rendering:auto] [transform:translateZ(0)] [backface-visibility:hidden]"
                                 decoding="async"
                                 fetchPriority="high"
                                 sizes="100vw"
                                 src={imgHero}
+                                srcSet={heroSrcSet}
                                 onError={capa.onImgError}
                             />
                         ) : null}
@@ -265,18 +275,10 @@ export default function App() {
                         <h1 className="font-headline mb-6 text-[clamp(2.75rem,12vw,6rem)] leading-tight tracking-tight text-on-surface md:mb-8 md:text-8xl">
                             Limaréh
                         </h1>
-                        <p className="mx-auto mb-10 max-w-2xl px-1 font-body text-lg font-light italic leading-snug text-on-surface-variant sm:text-xl md:mb-12 md:text-2xl">
+                        <p className="mx-auto max-w-2xl px-1 font-body text-lg font-light italic leading-snug text-on-surface-variant sm:text-xl md:text-2xl">
                             Eleve seu refúgio com fragrâncias de ambiente
                             assinadas Limaréh.
                         </p>
-                        <div className="flex flex-col items-center justify-center gap-6 md:flex-row">
-                            <a
-                                className="inline-flex min-h-[48px] min-w-[min(100%,280px)] items-center justify-center rounded bg-primary px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-on-primary transition-colors duration-300 hover:bg-primary-dim active:brightness-95 sm:px-10 sm:py-4"
-                                href="#produto"
-                            >
-                                Conheça o produto
-                            </a>
-                        </div>
                     </div>
                     <div className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 animate-bounce opacity-40">
                         <span className="material-symbols-outlined">
@@ -287,7 +289,7 @@ export default function App() {
 
                 <section
                     id="sobre"
-                    className="bg-background px-4 py-16 sm:px-6 md:px-8 md:py-24"
+                    className="scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-background px-4 py-16 sm:px-6 md:px-8 md:py-24"
                 >
                     <div className="mx-auto max-w-3xl text-center">
                         <h2 className="font-headline text-2xl text-on-surface md:text-3xl">
@@ -304,7 +306,7 @@ export default function App() {
 
                 <section
                     id="produto"
-                    className="bg-[#f5f2ed] px-4 py-16 sm:px-6 md:px-8 md:py-32"
+                    className="scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-[#f5f2ed] px-4 py-16 sm:px-6 md:px-8 md:py-32"
                 >
                     <div className="mx-auto max-w-screen-xl">
                         <div
@@ -351,7 +353,7 @@ export default function App() {
                                     borrifada — presença elegante para ambientes
                                     que pedem quietude com luminosidade.
                                 </p>
-                                <div className="flex flex-wrap gap-3 md:gap-4">
+                                <div className="flex flex-wrap justify-center gap-3 md:gap-4">
                                     {[
                                         'Frescor cristalino',
                                         '200ml',
@@ -367,14 +369,16 @@ export default function App() {
                                         </div>
                                     ))}
                                 </div>
-                                <div className="border-t border-outline-variant/20 pt-6">
-                                    <p className="text-sm italic text-on-surface-variant">
-                                        “A delicadeza infinita envolta em um
-                                        frescor cristalino.”
-                                    </p>
-                                    <p className="mt-4 font-label text-xs uppercase tracking-widest text-outline">
-                                        limareh aromas
-                                    </p>
+                                <div className="border-t border-outline-variant/20 py-6 md:py-8">
+                                    <div className="flex flex-col gap-6 md:gap-8">
+                                        <p className="text-sm italic text-on-surface-variant">
+                                            “A delicadeza infinita envolta em um
+                                            frescor cristalino.”
+                                        </p>
+                                        <p className="font-label text-xs uppercase tracking-widest text-outline">
+                                            limareh aromas
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -463,46 +467,9 @@ export default function App() {
 
                 <section className="bg-surface-container-highest/20 px-4 py-16 text-center sm:px-6 md:px-8 md:py-40">
                     <div className="mx-auto max-w-2xl px-1">
-                        <h2 className="font-headline mb-8 text-3xl leading-tight text-on-surface sm:text-4xl md:mb-12 md:text-6xl">
+                        <h2 className="font-headline text-3xl leading-tight text-on-surface sm:text-4xl md:text-6xl">
                             Pronto para transformar seu ambiente?
                         </h2>
-                        <a
-                            className="inline-flex min-h-[44px] items-center justify-center gap-3 border-b border-primary/20 pb-2 text-xs font-bold uppercase tracking-[0.25em] text-primary transition-all duration-300 hover:border-primary sm:text-sm sm:tracking-[0.3em]"
-                            href="#contato"
-                        >
-                            Fale com a Limaréh
-                            <span className="material-symbols-outlined">
-                                arrow_forward
-                            </span>
-                        </a>
-                    </div>
-                </section>
-
-                <section
-                    id="contato"
-                    className="bg-surface-container-low px-4 py-16 sm:px-6 md:px-8 md:py-28"
-                >
-                    <div className="mx-auto max-w-2xl">
-                        <h2 className="font-headline text-3xl text-on-surface md:text-4xl">
-                            Contato
-                        </h2>
-                        <p className="mt-4 font-body text-on-surface-variant">
-                            Fale com a equipe Limaréh pelo Instagram: dúvidas
-                            sobre o{' '}
-                            <strong className="font-medium text-on-surface">
-                                Jardim de Cristal
-                            </strong>
-                            , disponibilidade e parcerias.
-                        </p>
-                        <a
-                            href={INSTAGRAM_URL}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="mt-8 inline-flex min-h-[48px] w-full max-w-sm items-center justify-center gap-3 rounded-lg bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] px-6 py-3.5 text-sm font-bold uppercase tracking-widest text-white shadow-sm transition-transform duration-300 hover:scale-[1.02] hover:brightness-105 sm:w-auto sm:px-8 sm:py-4"
-                        >
-                            <InstagramIcon className="h-6 w-6" />
-                            @limareh.aromas
-                        </a>
                     </div>
                 </section>
             </main>
