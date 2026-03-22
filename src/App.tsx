@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { GallerySection } from './components/GallerySection';
 import { SafeImg } from './components/SafeImg';
 import { SiteQr } from './components/SiteQr';
@@ -21,18 +21,45 @@ const imgProdutoDetalhe2 = imgUrl('produto-extra-2.png');
 
 export default function App() {
     const wa = getWhatsAppUrl();
+    const [navOpen, setNavOpen] = useState(false);
     const [okProduto, setOkProduto] = useState(true);
     const [okExtra1, setOkExtra1] = useState(true);
     const [okExtra2, setOkExtra2] = useState(true);
 
+    useEffect(() => {
+        if (navOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [navOpen]);
+
+    useEffect(() => {
+        const mq = window.matchMedia('(min-width: 768px)');
+        const onWide = () => setNavOpen(false);
+        mq.addEventListener('change', onWide);
+        return () => mq.removeEventListener('change', onWide);
+    }, []);
+
+    const closeNav = () => setNavOpen(false);
+
     return (
         <div className="selection:bg-primary-container selection:text-on-primary-container">
-            <nav className="fixed top-0 z-50 w-full bg-stone-50/70 backdrop-blur-xl dark:bg-stone-900/70">
-                <div className="mx-auto flex max-w-screen-2xl items-center justify-between px-6 py-5 md:px-8 md:py-6">
-                    <div className="flex items-center gap-8 md:gap-12">
+            <nav
+                className="fixed top-0 z-50 w-full border-b border-stone-200/60 bg-stone-50/90 backdrop-blur-xl dark:border-stone-800/60 dark:bg-stone-900/90"
+                style={{
+                    paddingTop: 'max(0.5rem, env(safe-area-inset-top, 0px))',
+                }}
+            >
+                <div className="mx-auto flex max-w-screen-2xl items-center justify-between gap-3 px-4 py-3 sm:px-6 md:px-8 md:py-6">
+                    <div className="flex min-w-0 flex-1 items-center gap-6 md:gap-12">
                         <a
-                            className="font-serif text-xl tracking-[0.2em] text-stone-800 dark:text-stone-100 md:text-2xl"
+                            className="font-serif text-lg tracking-[0.2em] text-stone-800 dark:text-stone-100 sm:text-xl md:text-2xl"
                             href="#top"
+                            onClick={closeNav}
                         >
                             LIMARÉH
                         </a>
@@ -63,12 +90,12 @@ export default function App() {
                             </a>
                         </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex shrink-0 items-center gap-1 sm:gap-3">
                         <a
                             href={wa}
                             target="_blank"
                             rel="noreferrer"
-                            className="flex items-center gap-2 rounded border border-outline-variant/30 px-3 py-2 text-stone-700 transition-colors duration-300 hover:bg-surface-container-low dark:text-stone-300"
+                            className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-lg border border-outline-variant/30 px-3 py-2 text-stone-700 transition-colors duration-300 hover:bg-surface-container-low active:bg-stone-200/80 dark:text-stone-300"
                             aria-label="Abrir WhatsApp"
                         >
                             <span className="material-symbols-outlined text-[22px]">
@@ -78,12 +105,61 @@ export default function App() {
                                 WhatsApp
                             </span>
                         </a>
+                        <button
+                            type="button"
+                            className="flex h-11 w-11 items-center justify-center rounded-lg text-stone-800 transition-colors hover:bg-stone-200/70 active:bg-stone-300/80 md:hidden dark:text-stone-100 dark:hover:bg-stone-800/80"
+                            aria-expanded={navOpen}
+                            aria-controls="menu-mobile"
+                            aria-label={navOpen ? 'Fechar menu' : 'Abrir menu'}
+                            onClick={() => setNavOpen((o) => !o)}
+                        >
+                            <span className="material-symbols-outlined text-[26px]">
+                                {navOpen ? 'close' : 'menu'}
+                            </span>
+                        </button>
                     </div>
                 </div>
+                {navOpen ? (
+                    <div
+                        className="max-h-[min(70vh,calc(100dvh-4rem))] overflow-y-auto border-t border-stone-200/80 bg-stone-50/98 backdrop-blur-xl md:hidden dark:border-stone-700/80 dark:bg-stone-900/98"
+                        id="menu-mobile"
+                    >
+                        <div className="mx-auto flex max-w-screen-2xl flex-col px-2 py-2 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                            <a
+                                className="font-headline min-h-[48px] rounded-lg px-4 py-3 text-lg tracking-wide text-stone-600 active:bg-stone-200/80 dark:text-stone-300 dark:active:bg-stone-800/80"
+                                href="#sobre"
+                                onClick={closeNav}
+                            >
+                                Sobre
+                            </a>
+                            <a
+                                className="font-headline min-h-[48px] rounded-lg px-4 py-3 text-lg font-medium tracking-wide text-stone-900 active:bg-stone-200/80 dark:text-white dark:active:bg-stone-800/80"
+                                href="#produto"
+                                onClick={closeNav}
+                            >
+                                Produto
+                            </a>
+                            <a
+                                className="font-headline min-h-[48px] rounded-lg px-4 py-3 text-lg tracking-wide text-stone-600 active:bg-stone-200/80 dark:text-stone-300 dark:active:bg-stone-800/80"
+                                href="#galeria"
+                                onClick={closeNav}
+                            >
+                                Galeria
+                            </a>
+                            <a
+                                className="font-headline min-h-[48px] rounded-lg px-4 py-3 text-lg tracking-wide text-stone-600 active:bg-stone-200/80 dark:text-stone-300 dark:active:bg-stone-800/80"
+                                href="#contato"
+                                onClick={closeNav}
+                            >
+                                Contato
+                            </a>
+                        </div>
+                    </div>
+                ) : null}
             </nav>
 
             <main id="top">
-                <section className="relative isolate flex min-h-[100dvh] min-h-screen items-center justify-center overflow-hidden px-6 pb-16 pt-24 md:px-8 md:pt-20">
+                <section className="relative isolate flex min-h-[100dvh] min-h-screen items-center justify-center overflow-hidden px-4 pb-[max(4rem,env(safe-area-inset-bottom,0px))] pt-[calc(6rem+env(safe-area-inset-top,0px))] sm:px-6 md:px-8 md:pb-16 md:pt-[calc(5rem+env(safe-area-inset-top,0px))]">
                     <div className="absolute inset-0 z-0 bg-[#e8e4e0]">
                         <SafeImg
                             alt="Limaréh — ambiente natural e sofisticado"
@@ -96,19 +172,16 @@ export default function App() {
                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/50" />
                     </div>
                     <div className="hero-copy relative z-10 w-full max-w-4xl px-4 text-center">
-                        <span className="font-label mb-6 block text-[0.6875rem] uppercase tracking-[0.3em] text-primary">
-                            Est. 2024
-                        </span>
-                        <h1 className="font-headline mb-8 text-5xl leading-tight tracking-tight text-on-surface md:text-8xl">
+                        <h1 className="font-headline mb-6 text-[clamp(2.75rem,12vw,6rem)] leading-tight tracking-tight text-on-surface md:mb-8 md:text-8xl">
                             Limaréh
                         </h1>
-                        <p className="mx-auto mb-12 max-w-2xl font-body text-xl font-light italic text-on-surface-variant md:text-2xl">
+                        <p className="mx-auto mb-10 max-w-2xl px-1 font-body text-lg font-light italic leading-snug text-on-surface-variant sm:text-xl md:mb-12 md:text-2xl">
                             Eleve seu refúgio com fragrâncias de ambiente
                             assinadas Limaréh.
                         </p>
                         <div className="flex flex-col items-center justify-center gap-6 md:flex-row">
                             <a
-                                className="rounded bg-primary px-10 py-4 text-xs font-bold uppercase tracking-widest text-on-primary transition-colors duration-300 hover:bg-primary-dim"
+                                className="inline-flex min-h-[48px] min-w-[min(100%,280px)] items-center justify-center rounded bg-primary px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-on-primary transition-colors duration-300 hover:bg-primary-dim active:brightness-95 sm:px-10 sm:py-4"
                                 href="#produto"
                             >
                                 Conheça o produto
@@ -124,7 +197,7 @@ export default function App() {
 
                 <section
                     id="sobre"
-                    className="bg-background px-6 py-20 md:px-8 md:py-24"
+                    className="bg-background px-4 py-16 sm:px-6 md:px-8 md:py-24"
                 >
                     <div className="mx-auto max-w-3xl text-center">
                         <h2 className="font-headline text-2xl text-on-surface md:text-3xl">
@@ -141,7 +214,7 @@ export default function App() {
 
                 <section
                     id="produto"
-                    className="bg-[#f5f2ed] px-6 py-24 md:px-8 md:py-32"
+                    className="bg-[#f5f2ed] px-4 py-16 sm:px-6 md:px-8 md:py-32"
                 >
                     <div className="mx-auto max-w-screen-xl">
                         <div
@@ -170,7 +243,7 @@ export default function App() {
                                     <span className="text-xs font-semibold uppercase tracking-[0.2em] text-outline">
                                         Linha assinatura
                                     </span>
-                                    <h2 className="font-headline text-4xl italic text-on-surface md:text-5xl">
+                                    <h2 className="font-headline text-3xl italic leading-tight text-on-surface sm:text-4xl md:text-5xl">
                                         Jardim de Cristal
                                     </h2>
                                     <p className="font-label text-sm uppercase tracking-[0.25em] text-on-surface-variant">
@@ -253,10 +326,10 @@ export default function App() {
 
                 <section
                     id="valores"
-                    className="bg-surface px-6 py-20 md:px-8 md:py-24"
+                    className="bg-surface px-4 py-16 sm:px-6 md:px-8 md:py-24"
                 >
-                    <div className="mx-auto flex max-w-screen-xl flex-col items-start justify-between gap-16 md:flex-row">
-                        <div className="flex-1 space-y-4 border-l border-outline-variant/30 pl-8">
+                    <div className="mx-auto flex max-w-screen-xl flex-col items-start justify-between gap-12 md:flex-row md:gap-16">
+                        <div className="w-full flex-1 space-y-4 border-l border-outline-variant/30 pl-6 sm:pl-8">
                             <span className="material-symbols-outlined mb-2 text-3xl text-primary">
                                 eco
                             </span>
@@ -269,7 +342,7 @@ export default function App() {
                                 ftalatos nocivos.
                             </p>
                         </div>
-                        <div className="flex-1 space-y-4 border-l border-outline-variant/30 pl-8">
+                        <div className="w-full flex-1 space-y-4 border-l border-outline-variant/30 pl-6 sm:pl-8">
                             <span className="material-symbols-outlined mb-2 text-3xl text-primary">
                                 cruelty_free
                             </span>
@@ -281,7 +354,7 @@ export default function App() {
                                 em toda a cadeia de formulação.
                             </p>
                         </div>
-                        <div className="flex-1 space-y-4 border-l border-outline-variant/30 pl-8">
+                        <div className="w-full flex-1 space-y-4 border-l border-outline-variant/30 pl-6 sm:pl-8">
                             <span className="material-symbols-outlined mb-2 text-3xl text-primary">
                                 schedule
                             </span>
@@ -298,13 +371,13 @@ export default function App() {
 
                 <GallerySection />
 
-                <section className="bg-surface-container-highest/20 px-6 py-24 text-center md:px-8 md:py-40">
-                    <div className="mx-auto max-w-2xl">
-                        <h2 className="font-headline mb-10 text-4xl text-on-surface md:mb-12 md:text-6xl">
+                <section className="bg-surface-container-highest/20 px-4 py-16 text-center sm:px-6 md:px-8 md:py-40">
+                    <div className="mx-auto max-w-2xl px-1">
+                        <h2 className="font-headline mb-8 text-3xl leading-tight text-on-surface sm:text-4xl md:mb-12 md:text-6xl">
                             Pronto para transformar seu ambiente?
                         </h2>
                         <a
-                            className="inline-flex items-center gap-4 border-b border-primary/20 pb-2 text-sm font-bold uppercase tracking-[0.3em] text-primary transition-all duration-300 hover:border-primary"
+                            className="inline-flex min-h-[44px] items-center justify-center gap-3 border-b border-primary/20 pb-2 text-xs font-bold uppercase tracking-[0.25em] text-primary transition-all duration-300 hover:border-primary sm:text-sm sm:tracking-[0.3em]"
                             href="#contato"
                         >
                             Fale com a Limaréh
@@ -317,7 +390,7 @@ export default function App() {
 
                 <section
                     id="contato"
-                    className="bg-surface-container-low px-6 py-20 md:px-8 md:py-28"
+                    className="bg-surface-container-low px-4 py-16 sm:px-6 md:px-8 md:py-28"
                 >
                     <div className="mx-auto grid max-w-screen-lg grid-cols-1 items-start gap-14 lg:grid-cols-2 lg:gap-20">
                         <div>
@@ -337,7 +410,7 @@ export default function App() {
                                 href={wa}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="mt-8 inline-flex items-center gap-3 rounded bg-[#25D366] px-8 py-4 text-sm font-bold uppercase tracking-widest text-white shadow-sm transition-transform duration-300 hover:scale-[1.02] hover:brightness-105"
+                                className="mt-8 inline-flex min-h-[48px] w-full max-w-sm items-center justify-center gap-3 rounded bg-[#25D366] px-6 py-3.5 text-sm font-bold uppercase tracking-widest text-white shadow-sm transition-transform duration-300 hover:scale-[1.02] hover:brightness-105 sm:w-auto sm:px-8 sm:py-4"
                             >
                                 <svg
                                     width="22"
@@ -361,7 +434,7 @@ export default function App() {
                 </section>
             </main>
 
-            <footer className="mt-12 w-full bg-stone-100 px-6 py-14 dark:bg-stone-950 md:px-8 md:py-16">
+            <footer className="mt-12 w-full bg-stone-100 px-4 pb-[max(2.5rem,env(safe-area-inset-bottom,0px))] pt-12 dark:bg-stone-950 sm:px-6 md:px-8 md:py-16">
                 <div className="mx-auto flex max-w-screen-2xl flex-col items-center justify-between gap-8 md:flex-row">
                     <div className="font-serif text-xl italic text-stone-800 dark:text-stone-200">
                         Limaréh

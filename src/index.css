@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+    scroll-padding-top: calc(4.5rem + env(safe-area-inset-top, 0px));
+    -webkit-text-size-adjust: 100%;
+}
+
 .material-symbols-outlined {
     font-variation-settings:
         'FILL' 0,
@@ -13,6 +18,7 @@
 
 body {
     @apply font-body bg-background text-on-surface overflow-x-hidden;
+    -webkit-tap-highlight-color: rgba(47, 51, 49, 0.08);
 }
 
 .hero-copy {

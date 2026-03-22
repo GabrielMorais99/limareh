@@ -32,14 +32,14 @@ export function GallerySection() {
     return (
         <section
             id="galeria"
-            className="bg-surface-container-low/30 px-6 py-16 md:px-8 md:py-24"
+            className="bg-surface-container-low/30 px-4 py-14 sm:px-6 md:px-8 md:py-24"
         >
             <div className="mx-auto max-w-screen-2xl">
                 <div className="mb-12 text-center md:mb-16">
                     <p className="font-label text-sm uppercase tracking-[0.25em] text-outline">
                         Galeria
                     </p>
-                    <h2 className="font-headline mt-3 text-3xl text-on-surface md:text-4xl">
+                    <h2 className="font-headline mt-3 text-2xl leading-tight text-on-surface sm:text-3xl md:text-4xl">
                         Momentos Limaréh
                     </h2>
                     <p className="mx-auto mt-4 max-w-[42rem] font-body text-on-surface-variant">
