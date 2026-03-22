@@ -28,7 +28,9 @@ const NAV_SECTIONS = [
 
 type NavSectionId = (typeof NAV_SECTIONS)[number]['id'];
 
-function computeActiveNavSection(navBottomViewport: number): NavSectionId | null {
+function computeActiveNavSection(
+    navBottomViewport: number,
+): NavSectionId | null {
     /*
      * Referência em coordenadas da viewport (base do nav fixo).
      * scroll-mt nas secções faz o topo em documento ficar "atrás" da linha do nav;
@@ -329,7 +331,11 @@ export default function App() {
                                 </div>
                             ) : null}
                             <div
-                                className={`order-1 space-y-10 text-left md:order-2 md:pl-2 ${!imgProdutoMain.shouldRender ? 'md:mx-auto md:max-w-3xl md:text-center' : ''}`}
+                                className={`order-1 space-y-10 text-center md:order-2 md:pl-2 ${
+                                    imgProdutoMain.shouldRender
+                                        ? 'md:text-left'
+                                        : 'md:mx-auto md:max-w-3xl md:text-center'
+                                }`}
                             >
                                 <div className="space-y-4">
                                     <span className="text-xs font-semibold uppercase tracking-[0.2em] text-outline">
@@ -342,7 +348,7 @@ export default function App() {
                                         Home Spray · 200ml
                                     </p>
                                 </div>
-                                <p className="max-w-xl font-body text-lg font-light leading-[1.75] text-on-surface-variant">
+                                <p className="mx-auto max-w-xl font-body text-lg font-light leading-[1.75] text-on-surface-variant">
                                     Frasco em vidro cristalino com acabamento
                                     dourado e fórmula com brilho perolado que
                                     dança na luz. O{' '}
@@ -422,8 +428,8 @@ export default function App() {
                     id="valores"
                     className="bg-surface px-4 py-16 sm:px-6 md:px-8 md:py-24"
                 >
-                    <div className="mx-auto flex max-w-screen-xl flex-col items-start justify-between gap-12 md:flex-row md:gap-16">
-                        <div className="w-full flex-1 space-y-4 border-l border-outline-variant/30 pl-6 sm:pl-8">
+                    <div className="mx-auto flex max-w-screen-xl flex-col items-stretch justify-between gap-12 md:flex-row md:items-start md:gap-16">
+                        <div className="flex w-full flex-1 flex-col items-center space-y-4 border-l-0 pl-0 text-center md:items-start md:border-l md:border-outline-variant/30 md:pl-6 md:text-left lg:pl-8">
                             <span className="material-symbols-outlined mb-2 text-3xl text-primary">
                                 eco
                             </span>
@@ -436,7 +442,7 @@ export default function App() {
                                 ftalatos nocivos.
                             </p>
                         </div>
-                        <div className="w-full flex-1 space-y-4 border-l border-outline-variant/30 pl-6 sm:pl-8">
+                        <div className="flex w-full flex-1 flex-col items-center space-y-4 border-l-0 pl-0 text-center md:items-start md:border-l md:border-outline-variant/30 md:pl-6 md:text-left lg:pl-8">
                             <span className="material-symbols-outlined mb-2 text-3xl text-primary">
                                 cruelty_free
                             </span>
@@ -448,7 +454,7 @@ export default function App() {
                                 em toda a cadeia de formulação.
                             </p>
                         </div>
-                        <div className="w-full flex-1 space-y-4 border-l border-outline-variant/30 pl-6 sm:pl-8">
+                        <div className="flex w-full flex-1 flex-col items-center space-y-4 border-l-0 pl-0 text-center md:items-start md:border-l md:border-outline-variant/30 md:pl-6 md:text-left lg:pl-8">
                             <span className="material-symbols-outlined mb-2 text-3xl text-primary">
                                 schedule
                             </span>
