@@ -284,7 +284,7 @@ export default function App() {
                                         frescor cristalino.”
                                     </p>
                                     <p className="mt-4 font-label text-xs uppercase tracking-widest text-outline">
-                                        @limareh.aromas
+                                        limareh aromas
                                     </p>
                                 </div>
                             </div>
