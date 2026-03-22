@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { GallerySection } from './components/GallerySection';
-import { SafeImg } from './components/SafeImg';
 import { SiteQr } from './components/SiteQr';
+import { useImgSlot } from './context/ImgsManifestContext';
 import { getWhatsAppUrl } from './lib/links';
 
 /**
@@ -22,9 +22,10 @@ const imgProdutoDetalhe2 = imgUrl('produto-extra-2.png');
 export default function App() {
     const wa = getWhatsAppUrl();
     const [navOpen, setNavOpen] = useState(false);
-    const [okProduto, setOkProduto] = useState(true);
-    const [okExtra1, setOkExtra1] = useState(true);
-    const [okExtra2, setOkExtra2] = useState(true);
+    const capa = useImgSlot('capa.jpg');
+    const imgProdutoMain = useImgSlot('jardim-de-cristal.png');
+    const imgExtra1 = useImgSlot('produto-extra-1.png');
+    const imgExtra2 = useImgSlot('produto-extra-2.png');
 
     useEffect(() => {
         if (navOpen) {
@@ -161,14 +162,17 @@ export default function App() {
             <main id="top">
                 <section className="relative isolate flex min-h-[100dvh] min-h-screen items-center justify-center overflow-hidden px-4 pb-[max(4rem,env(safe-area-inset-bottom,0px))] pt-[calc(6rem+env(safe-area-inset-top,0px))] sm:px-6 md:px-8 md:pb-16 md:pt-[calc(5rem+env(safe-area-inset-top,0px))]">
                     <div className="absolute inset-0 z-0 bg-[#e8e4e0]">
-                        <SafeImg
-                            alt="Limaréh — ambiente natural e sofisticado"
-                            className="h-full w-full object-cover object-center"
-                            decoding="async"
-                            fetchPriority="high"
-                            sizes="100vw"
-                            src={imgHero}
-                        />
+                        {capa.shouldRender ? (
+                            <img
+                                alt="Limaréh — ambiente natural e sofisticado"
+                                className="h-full w-full object-cover object-center"
+                                decoding="async"
+                                fetchPriority="high"
+                                sizes="100vw"
+                                src={imgHero}
+                                onError={capa.onImgError}
+                            />
+                        ) : null}
                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/50" />
                     </div>
                     <div className="hero-copy relative z-10 w-full max-w-4xl px-4 text-center">
@@ -218,9 +222,9 @@ export default function App() {
                 >
                     <div className="mx-auto max-w-screen-xl">
                         <div
-                            className={`grid grid-cols-1 items-center gap-14 md:gap-20 ${okProduto ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}
+                            className={`grid grid-cols-1 items-center gap-14 md:gap-20 ${imgProdutoMain.shouldRender ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}
                         >
-                            {okProduto ? (
+                            {imgProdutoMain.shouldRender ? (
                                 <div className="order-2 flex justify-center md:order-1">
                                     <div className="group relative w-full max-w-[min(100%,28rem)] rounded-xl bg-[#f5f0ea] p-6 shadow-sm ring-1 ring-stone-200/80">
                                         <div className="absolute -inset-4 rounded-full bg-white/50 opacity-0 blur-3xl transition-opacity duration-700 group-hover:opacity-100" />
@@ -231,13 +235,13 @@ export default function App() {
                                             fetchPriority="high"
                                             sizes="(min-width: 768px) 28rem, 100vw"
                                             src={imgProduto}
-                                            onError={() => setOkProduto(false)}
+                                            onError={imgProdutoMain.onImgError}
                                         />
                                     </div>
                                 </div>
                             ) : null}
                             <div
-                                className={`order-1 space-y-10 text-left md:order-2 md:pl-2 ${!okProduto ? 'md:mx-auto md:max-w-3xl md:text-center' : ''}`}
+                                className={`order-1 space-y-10 text-left md:order-2 md:pl-2 ${!imgProdutoMain.shouldRender ? 'md:mx-auto md:max-w-3xl md:text-center' : ''}`}
                             >
                                 <div className="space-y-4">
                                     <span className="text-xs font-semibold uppercase tracking-[0.2em] text-outline">
@@ -289,11 +293,11 @@ export default function App() {
                             </div>
                         </div>
 
-                        {okExtra1 || okExtra2 ? (
+                        {imgExtra1.shouldRender || imgExtra2.shouldRender ? (
                             <div
-                                className={`mt-16 grid grid-cols-1 gap-6 md:mt-20 md:gap-8 ${okExtra1 && okExtra2 ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}
+                                className={`mt-16 grid grid-cols-1 gap-6 md:mt-20 md:gap-8 ${imgExtra1.shouldRender && imgExtra2.shouldRender ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}
                             >
-                                {okExtra1 ? (
+                                {imgExtra1.shouldRender ? (
                                     <div className="flex min-h-[280px] overflow-hidden rounded-xl bg-[#f5f0ea] p-4 shadow-sm ring-1 ring-stone-200/80 md:min-h-[320px]">
                                         <img
                                             alt="Limaréh Jardim de Cristal em detalhe — lifestyle"
@@ -302,11 +306,11 @@ export default function App() {
                                             loading="lazy"
                                             sizes="(min-width: 768px) 50vw, 100vw"
                                             src={imgProdutoDetalhe1}
-                                            onError={() => setOkExtra1(false)}
+                                            onError={imgExtra1.onImgError}
                                         />
                                     </div>
                                 ) : null}
-                                {okExtra2 ? (
+                                {imgExtra2.shouldRender ? (
                                     <div className="flex min-h-[280px] overflow-hidden rounded-xl bg-[#f5f0ea] p-4 shadow-sm ring-1 ring-stone-200/80 md:min-h-[320px]">
                                         <img
                                             alt="Limaréh Jardim de Cristal — borrifação"
@@ -315,7 +319,7 @@ export default function App() {
                                             loading="lazy"
                                             sizes="(min-width: 768px) 50vw, 100vw"
                                             src={imgProdutoDetalhe2}
-                                            onError={() => setOkExtra2(false)}
+                                            onError={imgExtra2.onImgError}
                                         />
                                     </div>
                                 ) : null}

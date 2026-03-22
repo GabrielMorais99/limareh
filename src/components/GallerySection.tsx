@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useMemo } from 'react';
+import { useImgsManifest, useImgSlot } from '../context/ImgsManifestContext';
 
 function imgUrl(file: string): string {
     const b = import.meta.env.BASE_URL || '/';
@@ -18,14 +19,24 @@ const galleryItems: { file: string; alt: string }[] = [
 ];
 
 export function GallerySection() {
-    const [failed, setFailed] = useState<Record<string, boolean>>({});
-    const markFailed = useCallback((file: string) => {
-        setFailed((prev) => ({ ...prev, [file]: true }));
-    }, []);
+    const { status, manifest } = useImgsManifest();
+    const g1 = useImgSlot('galeria-01.jpg');
+    const g2 = useImgSlot('galeria-02.jpg');
 
-    const allFailed =
-        galleryItems.length > 0 &&
-        galleryItems.every((item) => failed[item.file] === true);
+    const slots = [g1, g2];
+
+    const allFailed = useMemo(() => {
+        if (status === 'loading') return false;
+        if (status === 'ok') {
+            return (
+                manifest['galeria-01.jpg'] !== true &&
+                manifest['galeria-02.jpg'] !== true
+            );
+        }
+        return !g1.shouldRender && !g2.shouldRender;
+    }, [status, manifest, g1.shouldRender, g2.shouldRender]);
+
+    if (status === 'loading') return null;
 
     if (allFailed) return null;
 
@@ -48,8 +59,10 @@ export function GallerySection() {
                     </p>
                 </div>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
-                    {galleryItems.map((item) =>
-                        failed[item.file] ? null : (
+                    {galleryItems.map((item, i) => {
+                        const slot = slots[i];
+                        if (!slot.shouldRender) return null;
+                        return (
                             <div
                                 key={item.file}
                                 className="group relative aspect-[3/4] w-full max-h-[min(85vh,640px)] overflow-hidden rounded-xl bg-[#f0ebe7] ring-1 ring-stone-200/60"
@@ -61,11 +74,11 @@ export function GallerySection() {
                                     loading="eager"
                                     sizes="(max-width: 768px) 100vw, 50vw"
                                     src={imgUrl(item.file)}
-                                    onError={() => markFailed(item.file)}
+                                    onError={slot.onImgError}
                                 />
                             </div>
-                        ),
-                    )}
+                        );
+                    })}
                 </div>
             </div>
         </section>

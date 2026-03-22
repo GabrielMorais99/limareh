@@ -2,8 +2,9 @@
  * Sincroniza APENAS a pasta do projeto `imgs/` → `public/imgs/`.
  * Nada é puxado de cache do Cursor, assets soltos ou nomes por hash.
  * Se um arquivo não existir em `imgs/`, não entra no site (public fica sem ele).
+ * O site lê `manifest.json` para não pedir arquivos inexistentes (evita 404 no console).
  *
- * Nomes esperados em imgs/ (podem faltar; o site omite via SafeImg):
+ * Nomes esperados em imgs/:
  * - capa.jpg (ou Capa.jpg / .jpeg)
  * - jardim-de-cristal.png, produto-extra-1.png, produto-extra-2.png
  * - galeria-01.jpg, galeria-02.jpg (ou galera-NN com typo, ver findGallerySource)
@@ -85,11 +86,34 @@ function findCapaSource() {
   return null;
 }
 
+const TRACKED_FILES = [
+  "capa.jpg",
+  "jardim-de-cristal.png",
+  "produto-extra-1.png",
+  "produto-extra-2.png",
+  "galeria-01.jpg",
+  "galeria-02.jpg",
+];
+
+function writeManifest() {
+  const manifest = {};
+  for (const name of TRACKED_FILES) {
+    const p = path.join(destDir, name);
+    manifest[name] = fs.existsSync(p) && fs.statSync(p).size > 0;
+  }
+  fs.writeFileSync(
+    path.join(destDir, "manifest.json"),
+    `${JSON.stringify(manifest)}\n`
+  );
+  console.log("[ensure-images] manifest.json (evita 404 no browser)");
+}
+
 fs.mkdirSync(destDir, { recursive: true });
 emptyDestDir();
 
 if (!fs.existsSync(imgsDir)) {
   console.warn("[ensure-images] pasta imgs/ não existe — public/imgs ficou vazio.");
+  writeManifest();
   console.log("[ensure-images] →", destDir);
   process.exit(0);
 }
@@ -132,4 +156,5 @@ for (let n = 1; n <= 2; n++) {
   }
 }
 
+writeManifest();
 console.log("[ensure-images] →", destDir, "(somente arquivos presentes em imgs/)");
