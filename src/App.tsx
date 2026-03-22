@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { GallerySection } from './components/GallerySection';
 import { InstagramIcon } from './components/InstagramIcon';
 import { useImgSlot } from './context/ImgsManifestContext';
@@ -19,8 +19,41 @@ const imgProduto = imgUrl('jardim-de-cristal.png');
 const imgProdutoDetalhe1 = imgUrl('produto-extra-1.png');
 const imgProdutoDetalhe2 = imgUrl('produto-extra-2.png');
 
+const NAV_SECTIONS = [
+    { id: 'sobre', label: 'Sobre' },
+    { id: 'produto', label: 'Produto' },
+    { id: 'galeria', label: 'Galeria' },
+    { id: 'contato', label: 'Contato' },
+] as const;
+
+type NavSectionId = (typeof NAV_SECTIONS)[number]['id'];
+
+function getElementDocumentTop(el: HTMLElement): number {
+    return el.getBoundingClientRect().top + window.scrollY;
+}
+
+function computeActiveNavSection(navBottomY: number): NavSectionId | null {
+    const line = window.scrollY + navBottomY + 1;
+    for (let i = NAV_SECTIONS.length - 1; i >= 0; i--) {
+        const { id } = NAV_SECTIONS[i];
+        const el = document.getElementById(id);
+        if (!el) continue;
+        if (line >= getElementDocumentTop(el)) {
+            return id;
+        }
+    }
+    return null;
+}
+
 export default function App() {
     const [navOpen, setNavOpen] = useState(false);
+    const [activeNav, setActiveNav] = useState<NavSectionId | null>(null);
+    const [navIndicator, setNavIndicator] = useState({ left: 0, width: 0 });
+    const navRef = useRef<HTMLElement>(null);
+    const navLinksRowRef = useRef<HTMLDivElement>(null);
+    const navLinkRefs = useRef<Partial<Record<NavSectionId, HTMLAnchorElement>>>(
+        {},
+    );
     const capa = useImgSlot('capa.jpg');
     const imgProdutoMain = useImgSlot('jardim-de-cristal.png');
     const imgExtra1 = useImgSlot('produto-extra-1.png');
@@ -44,11 +77,67 @@ export default function App() {
         return () => mq.removeEventListener('change', onWide);
     }, []);
 
+    useEffect(() => {
+        const updateActiveFromScroll = () => {
+            const navEl = navRef.current;
+            if (!navEl) return;
+            const navBottom = navEl.getBoundingClientRect().bottom;
+            setActiveNav(computeActiveNavSection(navBottom));
+        };
+        updateActiveFromScroll();
+        const syncAfterPaint = window.setTimeout(updateActiveFromScroll, 0);
+        window.addEventListener('scroll', updateActiveFromScroll, {
+            passive: true,
+        });
+        window.addEventListener('resize', updateActiveFromScroll);
+        window.addEventListener('hashchange', updateActiveFromScroll);
+        return () => {
+            clearTimeout(syncAfterPaint);
+            window.removeEventListener('scroll', updateActiveFromScroll);
+            window.removeEventListener('resize', updateActiveFromScroll);
+            window.removeEventListener('hashchange', updateActiveFromScroll);
+        };
+    }, []);
+
+    useLayoutEffect(() => {
+        const mq = window.matchMedia('(min-width: 768px)');
+        const updateIndicator = () => {
+            if (!mq.matches || !activeNav) {
+                setNavIndicator({ left: 0, width: 0 });
+                return;
+            }
+            const row = navLinksRowRef.current;
+            const link = navLinkRefs.current[activeNav];
+            if (!row || !link) {
+                setNavIndicator({ left: 0, width: 0 });
+                return;
+            }
+            const rowRect = row.getBoundingClientRect();
+            const linkRect = link.getBoundingClientRect();
+            if (linkRect.width < 1) {
+                setNavIndicator({ left: 0, width: 0 });
+                return;
+            }
+            setNavIndicator({
+                left: linkRect.left - rowRect.left,
+                width: linkRect.width,
+            });
+        };
+        updateIndicator();
+        mq.addEventListener('change', updateIndicator);
+        window.addEventListener('resize', updateIndicator);
+        return () => {
+            mq.removeEventListener('change', updateIndicator);
+            window.removeEventListener('resize', updateIndicator);
+        };
+    }, [activeNav, navOpen]);
+
     const closeNav = () => setNavOpen(false);
 
     return (
         <div className="selection:bg-primary-container selection:text-on-primary-container">
             <nav
+                ref={navRef}
                 className="fixed top-0 z-50 w-full border-b border-stone-200/60 bg-stone-50/90 backdrop-blur-xl dark:border-stone-800/60 dark:bg-stone-900/90"
                 style={{
                     paddingTop: 'max(0.5rem, env(safe-area-inset-top, 0px))',
@@ -63,31 +152,42 @@ export default function App() {
                         >
                             LIMARÉH
                         </a>
-                        <div className="hidden items-center gap-8 md:flex">
-                            <a
-                                className="font-headline text-lg tracking-wide text-stone-500 transition-colors duration-300 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200"
-                                href="#sobre"
-                            >
-                                Sobre
-                            </a>
-                            <a
-                                className="border-b border-stone-400 pb-1 font-headline text-lg font-medium tracking-wide text-stone-900 dark:border-stone-500 dark:text-white"
-                                href="#produto"
-                            >
-                                Produto
-                            </a>
-                            <a
-                                className="font-headline text-lg tracking-wide text-stone-500 transition-colors duration-300 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200"
-                                href="#galeria"
-                            >
-                                Galeria
-                            </a>
-                            <a
-                                className="font-headline text-lg tracking-wide text-stone-500 transition-colors duration-300 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200"
-                                href="#contato"
-                            >
-                                Contato
-                            </a>
+                        <div
+                            ref={navLinksRowRef}
+                            className="relative hidden items-center gap-8 md:flex"
+                        >
+                            {NAV_SECTIONS.map(({ id, label }) => {
+                                const isActive = activeNav === id;
+                                return (
+                                    <a
+                                        key={id}
+                                        ref={(el) => {
+                                            if (el) {
+                                                navLinkRefs.current[id] = el;
+                                            } else {
+                                                delete navLinkRefs.current[id];
+                                            }
+                                        }}
+                                        className={`relative pb-1 font-headline text-lg tracking-wide transition-colors duration-300 ${
+                                            isActive
+                                                ? 'font-medium text-stone-900 dark:text-white'
+                                                : 'text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200'
+                                        }`}
+                                        href={`#${id}`}
+                                    >
+                                        {label}
+                                    </a>
+                                );
+                            })}
+                            <span
+                                aria-hidden
+                                className="pointer-events-none absolute bottom-0 h-px bg-stone-900 transition-[left,width] duration-300 ease-out dark:bg-stone-200"
+                                style={{
+                                    width: navIndicator.width,
+                                    left: navIndicator.left,
+                                    opacity: navIndicator.width > 0 ? 1 : 0,
+                                }}
+                            />
                         </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-1 sm:gap-3">
@@ -123,34 +223,23 @@ export default function App() {
                         id="menu-mobile"
                     >
                         <div className="mx-auto flex max-w-screen-2xl flex-col px-2 py-2 pb-[max(1rem,env(safe-area-inset-bottom))]">
-                            <a
-                                className="font-headline min-h-[48px] rounded-lg px-4 py-3 text-lg tracking-wide text-stone-600 active:bg-stone-200/80 dark:text-stone-300 dark:active:bg-stone-800/80"
-                                href="#sobre"
-                                onClick={closeNav}
-                            >
-                                Sobre
-                            </a>
-                            <a
-                                className="font-headline min-h-[48px] rounded-lg px-4 py-3 text-lg font-medium tracking-wide text-stone-900 active:bg-stone-200/80 dark:text-white dark:active:bg-stone-800/80"
-                                href="#produto"
-                                onClick={closeNav}
-                            >
-                                Produto
-                            </a>
-                            <a
-                                className="font-headline min-h-[48px] rounded-lg px-4 py-3 text-lg tracking-wide text-stone-600 active:bg-stone-200/80 dark:text-stone-300 dark:active:bg-stone-800/80"
-                                href="#galeria"
-                                onClick={closeNav}
-                            >
-                                Galeria
-                            </a>
-                            <a
-                                className="font-headline min-h-[48px] rounded-lg px-4 py-3 text-lg tracking-wide text-stone-600 active:bg-stone-200/80 dark:text-stone-300 dark:active:bg-stone-800/80"
-                                href="#contato"
-                                onClick={closeNav}
-                            >
-                                Contato
-                            </a>
+                            {NAV_SECTIONS.map(({ id, label }) => {
+                                const isActive = activeNav === id;
+                                return (
+                                    <a
+                                        key={id}
+                                        className={`font-headline min-h-[48px] rounded-lg px-4 py-3 text-lg tracking-wide active:bg-stone-200/80 dark:active:bg-stone-800/80 ${
+                                            isActive
+                                                ? 'font-medium text-stone-900 dark:text-white'
+                                                : 'text-stone-600 dark:text-stone-300'
+                                        }`}
+                                        href={`#${id}`}
+                                        onClick={closeNav}
+                                    >
+                                        {label}
+                                    </a>
+                                );
+                            })}
                         </div>
                     </div>
                 ) : null}
