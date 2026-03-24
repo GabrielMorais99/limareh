@@ -1,5 +1,31 @@
-import { useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { useImgsManifest, useImgSlot } from '../context/ImgsManifestContext';
+
+function useInView(options = {}) {
+    const [isInView, setIsInView] = useState(false);
+    const ref = useRef(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) {
+                setIsInView(true);
+                observer.unobserve(entry.target);
+            }
+        }, options);
+
+        if (ref.current) {
+            observer.observe(ref.current);
+        }
+
+        return () => {
+            if (ref.current) {
+                observer.unobserve(ref.current);
+            }
+        };
+    }, [options]);
+
+    return [ref, isInView];
+}
 
 function imgUrl(file: string): string {
     const b = import.meta.env.BASE_URL || '/';
@@ -25,6 +51,7 @@ export function GallerySection() {
     const { status, manifest } = useImgsManifest();
     const g1 = useImgSlot('galeria-01.jpg');
     const g2 = useImgSlot('galeria-02.jpg');
+    const [sectionRef, isInView] = useInView({ threshold: 0.1 });
 
     const slots = [g1, g2];
 
@@ -70,7 +97,13 @@ export function GallerySection() {
     }
 
     return (
-        <section id="galeria" className={sectionClass}>
+        <section 
+            id="galeria" 
+            ref={sectionRef}
+            className={`${sectionClass} transition-all duration-1000 ease-out transform ${
+                isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+            }`}
+        >
             <div className="mx-auto max-w-screen-2xl">
                 <div className="mb-12 text-center md:mb-16">
                     <p className="font-label text-sm uppercase tracking-[0.25em] text-outline">
@@ -91,7 +124,10 @@ export function GallerySection() {
                         return (
                             <div
                                 key={item.file}
-                                className="group relative aspect-[3/4] w-full max-h-[min(85vh,640px)] overflow-hidden rounded-xl bg-[#f0ebe7] ring-1 ring-stone-200/60"
+                                className={`group relative aspect-[3/4] w-full max-h-[min(85vh,640px)] overflow-hidden rounded-xl bg-[#f0ebe7] ring-1 ring-stone-200/60 transition-all duration-1000 transform ${
+                                    isInView ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                                }`}
+                                style={{ transitionDelay: `${200 + i * 200}ms` }}
                             >
                                 <img
                                     alt={item.alt}

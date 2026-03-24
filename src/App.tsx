@@ -1,14 +1,58 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { GallerySection } from './components/GallerySection';
 import { InstagramIcon } from './components/InstagramIcon';
 import { useImgsManifest, useImgSlot } from './context/ImgsManifestContext';
 import { INSTAGRAM_URL } from './lib/links';
 
 /**
- * Imagens em public/imgs (servidas em /imgs/...).
- * capa.jpg = hero (opcional capa-2x.jpg em imgs/ para Retina via srcset);
- * produto = *.png; galeria = galeria-01.jpg + galeria-02.jpg
+ * Hook para detectar quando um elemento entra na viewport.
  */
+function useInView(options = {}) {
+    const [isInView, setIsInView] = useState(false);
+    const ref = useRef(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) {
+                setIsInView(true);
+                observer.unobserve(entry.target);
+            }
+        }, options);
+
+        if (ref.current) {
+            observer.observe(ref.current);
+        }
+
+        return () => {
+            if (ref.current) {
+                observer.unobserve(ref.current);
+            }
+        };
+    }, [options]);
+
+    return [ref, isInView];
+}
+
+/**
+ * Componente Wrapper para seções animadas.
+ */
+function AnimatedSection({ children, id, className, delay = 0 }) {
+    const [ref, isInView] = useInView({ threshold: 0.1 });
+    
+    return (
+        <section
+            id={id}
+            ref={ref}
+            className={`${className} transition-all duration-1000 ease-out transform ${
+                isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+            }`}
+            style={{ transitionDelay: `${delay}ms` }}
+        >
+            {children}
+        </section>
+    );
+}
+
 function imgUrl(file: string): string {
     const b = import.meta.env.BASE_URL || '/';
     const normalized = b.endsWith('/') ? b : `${b}/`;
@@ -20,44 +64,7 @@ const imgProduto = imgUrl('jardim-de-cristal.png');
 const imgProdutoDetalhe1 = imgUrl('produto-extra-1.png');
 const imgProdutoDetalhe2 = imgUrl('produto-extra-2.png');
 
-const NAV_SECTIONS = [
-    { id: 'sobre', label: 'Sobre' },
-    { id: 'produto', label: 'Produto' },
-    { id: 'galeria', label: 'Galeria' },
-] as const;
-
-type NavSectionId = (typeof NAV_SECTIONS)[number]['id'];
-
-function computeActiveNavSection(
-    navBottomViewport: number,
-): NavSectionId | null {
-    /*
-     * Referência em coordenadas da viewport (base do nav fixo).
-     * scroll-mt nas secções faz o topo em documento ficar "atrás" da linha do nav;
-     * comparar só com offsetTop quebrava Sobre e saltava Galeria sem #galeria no DOM.
-     */
-    const bufferPx = 80;
-    let active: NavSectionId | null = null;
-    for (const { id } of NAV_SECTIONS) {
-        const el = document.getElementById(id);
-        if (!el) continue;
-        const top = el.getBoundingClientRect().top;
-        if (top <= navBottomViewport + bufferPx) {
-            active = id;
-        }
-    }
-    return active;
-}
-
 export default function App() {
-    const [navOpen, setNavOpen] = useState(false);
-    const [activeNav, setActiveNav] = useState<NavSectionId | null>(null);
-    const [navIndicator, setNavIndicator] = useState({ left: 0, width: 0 });
-    const navRef = useRef<HTMLElement>(null);
-    const navLinksRowRef = useRef<HTMLDivElement>(null);
-    const navLinkRefs = useRef<
-        Partial<Record<NavSectionId, HTMLAnchorElement>>
-    >({});
     const { status: imgsStatus, manifest: imgsManifest } = useImgsManifest();
     const capa = useImgSlot('capa.jpg');
     const heroSrcSet =
@@ -68,87 +75,11 @@ export default function App() {
     const imgExtra1 = useImgSlot('produto-extra-1.png');
     const imgExtra2 = useImgSlot('produto-extra-2.png');
 
-    useEffect(() => {
-        if (navOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
-        return () => {
-            document.body.style.overflow = '';
-        };
-    }, [navOpen]);
-
-    useEffect(() => {
-        const mq = window.matchMedia('(min-width: 768px)');
-        const onWide = () => setNavOpen(false);
-        mq.addEventListener('change', onWide);
-        return () => mq.removeEventListener('change', onWide);
-    }, []);
-
-    useEffect(() => {
-        const updateActiveFromScroll = () => {
-            const navEl = navRef.current;
-            if (!navEl) return;
-            const navBottom = navEl.getBoundingClientRect().bottom;
-            setActiveNav(computeActiveNavSection(navBottom));
-        };
-        updateActiveFromScroll();
-        const syncAfterPaint = window.setTimeout(updateActiveFromScroll, 0);
-        window.addEventListener('scroll', updateActiveFromScroll, {
-            passive: true,
-        });
-        window.addEventListener('resize', updateActiveFromScroll);
-        window.addEventListener('hashchange', updateActiveFromScroll);
-        window.addEventListener('scrollend', updateActiveFromScroll);
-        return () => {
-            clearTimeout(syncAfterPaint);
-            window.removeEventListener('scroll', updateActiveFromScroll);
-            window.removeEventListener('resize', updateActiveFromScroll);
-            window.removeEventListener('hashchange', updateActiveFromScroll);
-            window.removeEventListener('scrollend', updateActiveFromScroll);
-        };
-    }, []);
-
-    useLayoutEffect(() => {
-        const mq = window.matchMedia('(min-width: 768px)');
-        const updateIndicator = () => {
-            if (!mq.matches || !activeNav) {
-                setNavIndicator({ left: 0, width: 0 });
-                return;
-            }
-            const row = navLinksRowRef.current;
-            const link = navLinkRefs.current[activeNav];
-            if (!row || !link) {
-                setNavIndicator({ left: 0, width: 0 });
-                return;
-            }
-            const rowRect = row.getBoundingClientRect();
-            const linkRect = link.getBoundingClientRect();
-            if (linkRect.width < 1) {
-                setNavIndicator({ left: 0, width: 0 });
-                return;
-            }
-            setNavIndicator({
-                left: linkRect.left - rowRect.left,
-                width: linkRect.width,
-            });
-        };
-        updateIndicator();
-        mq.addEventListener('change', updateIndicator);
-        window.addEventListener('resize', updateIndicator);
-        return () => {
-            mq.removeEventListener('change', updateIndicator);
-            window.removeEventListener('resize', updateIndicator);
-        };
-    }, [activeNav, navOpen]);
-
-    const closeNav = () => setNavOpen(false);
+    const [heroRef, heroInView] = useInView();
 
     return (
         <div className="selection:bg-primary-container selection:text-on-primary-container">
             <nav
-                ref={navRef}
                 className="fixed top-0 z-50 w-full border-b border-stone-200/60 bg-stone-50/90 backdrop-blur-xl dark:border-stone-800/60 dark:bg-stone-900/90"
                 style={{
                     paddingTop: 'max(0.5rem, env(safe-area-inset-top, 0px))',
@@ -159,47 +90,9 @@ export default function App() {
                         <a
                             className="font-serif text-lg tracking-[0.2em] text-stone-800 dark:text-stone-100 sm:text-xl md:text-2xl"
                             href="#top"
-                            onClick={closeNav}
                         >
                             LIMARÉH
                         </a>
-                        <div
-                            ref={navLinksRowRef}
-                            className="relative hidden items-center gap-8 md:flex"
-                        >
-                            {NAV_SECTIONS.map(({ id, label }) => {
-                                const isActive = activeNav === id;
-                                return (
-                                    <a
-                                        key={id}
-                                        ref={(el) => {
-                                            if (el) {
-                                                navLinkRefs.current[id] = el;
-                                            } else {
-                                                delete navLinkRefs.current[id];
-                                            }
-                                        }}
-                                        className={`relative pb-1 font-headline text-lg tracking-wide transition-colors duration-300 ${
-                                            isActive
-                                                ? 'font-medium text-stone-900 dark:text-white'
-                                                : 'text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200'
-                                        }`}
-                                        href={`#${id}`}
-                                    >
-                                        {label}
-                                    </a>
-                                );
-                            })}
-                            <span
-                                aria-hidden
-                                className="pointer-events-none absolute bottom-0 h-px bg-stone-900 transition-[left,width] duration-300 ease-out dark:bg-stone-200"
-                                style={{
-                                    width: navIndicator.width,
-                                    left: navIndicator.left,
-                                    opacity: navIndicator.width > 0 ? 1 : 0,
-                                }}
-                            />
-                        </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-1 sm:gap-3">
                         <a
@@ -214,51 +107,16 @@ export default function App() {
                                 Instagram
                             </span>
                         </a>
-                        <button
-                            type="button"
-                            className="flex h-11 w-11 items-center justify-center rounded-lg text-stone-800 transition-colors hover:bg-stone-200/70 active:bg-stone-300/80 md:hidden dark:text-stone-100 dark:hover:bg-stone-800/80"
-                            aria-expanded={navOpen}
-                            aria-controls="menu-mobile"
-                            aria-label={navOpen ? 'Fechar menu' : 'Abrir menu'}
-                            onClick={() => setNavOpen((o) => !o)}
-                        >
-                            <span className="material-symbols-outlined text-[26px]">
-                                {navOpen ? 'close' : 'menu'}
-                            </span>
-                        </button>
                     </div>
                 </div>
-                {navOpen ? (
-                    <div
-                        className="max-h-[min(70vh,calc(100dvh-4rem))] overflow-y-auto border-t border-stone-200/80 bg-stone-50/98 backdrop-blur-xl md:hidden dark:border-stone-700/80 dark:bg-stone-900/98"
-                        id="menu-mobile"
-                    >
-                        <div className="mx-auto flex max-w-screen-2xl flex-col px-2 py-2 pb-[max(1rem,env(safe-area-inset-bottom))]">
-                            {NAV_SECTIONS.map(({ id, label }) => {
-                                const isActive = activeNav === id;
-                                return (
-                                    <a
-                                        key={id}
-                                        className={`font-headline min-h-[48px] rounded-lg px-4 py-3 text-lg tracking-wide active:bg-stone-200/80 dark:active:bg-stone-800/80 ${
-                                            isActive
-                                                ? 'font-medium text-stone-900 dark:text-white'
-                                                : 'text-stone-600 dark:text-stone-300'
-                                        }`}
-                                        href={`#${id}`}
-                                        onClick={closeNav}
-                                    >
-                                        {label}
-                                    </a>
-                                );
-                            })}
-                        </div>
-                    </div>
-                ) : null}
             </nav>
 
             <main id="top">
-                <section className="relative isolate flex min-h-[100dvh] min-h-screen items-center justify-center overflow-hidden px-4 pb-[max(4rem,env(safe-area-inset-bottom,0px))] pt-[calc(6rem+env(safe-area-inset-top,0px))] sm:px-6 md:px-8 md:pb-16 md:pt-[calc(5rem+env(safe-area-inset-top,0px))]">
-                    <div className="absolute inset-0 z-0 bg-[#e8e4e0]">
+                <section 
+                    ref={heroRef}
+                    className="relative isolate flex min-h-[100dvh] min-h-screen items-center justify-center overflow-hidden px-4 pb-[max(4rem,env(safe-area-inset-bottom,0px))] pt-[calc(6rem+env(safe-area-inset-top,0px))] sm:px-6 md:px-8 md:pb-16 md:pt-[calc(5rem+env(safe-area-inset-top,0px))]"
+                >
+                    <div className={`absolute inset-0 z-0 bg-[#e8e4e0] transition-opacity duration-1000 ${heroInView ? 'opacity-100' : 'opacity-0'}`}>
                         {capa.shouldRender ? (
                             <img
                                 alt="Limaréh — ambiente natural e sofisticado"
@@ -273,7 +131,7 @@ export default function App() {
                         ) : null}
                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/50" />
                     </div>
-                    <div className="hero-copy relative z-10 w-full max-w-4xl px-4 text-center">
+                    <div className={`hero-copy relative z-10 w-full max-w-4xl px-4 text-center transition-all duration-1000 delay-300 transform ${heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
                         <h1 className="font-headline mb-6 text-[clamp(2.75rem,12vw,6rem)] leading-tight tracking-tight text-on-surface md:mb-8 md:text-8xl">
                             Limaréh
                         </h1>
@@ -282,14 +140,14 @@ export default function App() {
                             assinadas Limaréh.
                         </p>
                     </div>
-                    <div className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 animate-bounce opacity-40">
+                    <div className={`absolute bottom-8 left-1/2 z-10 -translate-x-1/2 animate-bounce transition-opacity duration-1000 delay-700 ${heroInView ? 'opacity-40' : 'opacity-0'}`}>
                         <span className="material-symbols-outlined">
                             expand_more
                         </span>
                     </div>
                 </section>
 
-                <section
+                <AnimatedSection
                     id="sobre"
                     className="scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-background px-4 py-16 sm:px-6 md:px-8 md:py-24"
                 >
@@ -304,9 +162,9 @@ export default function App() {
                             minimalista, sensorial e acolhedora.
                         </p>
                     </div>
-                </section>
+                </AnimatedSection>
 
-                <section
+                <AnimatedSection
                     id="produto"
                     className="scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-[#f5f2ed] px-4 py-16 sm:px-6 md:px-8 md:py-32"
                 >
@@ -422,11 +280,12 @@ export default function App() {
                             </div>
                         ) : null}
                     </div>
-                </section>
+                </AnimatedSection>
 
-                <section
+                <AnimatedSection
                     id="valores"
                     className="bg-surface px-4 py-16 sm:px-6 md:px-8 md:py-24"
+                    delay={200}
                 >
                     <div className="mx-auto flex max-w-screen-xl flex-col items-stretch justify-between gap-12 md:flex-row md:items-start md:gap-16">
                         <div className="flex w-full flex-1 flex-col items-center space-y-4 border-l-0 pl-0 text-center md:items-start md:border-l md:border-outline-variant/30 md:pl-6 md:text-left lg:pl-8">
@@ -467,17 +326,20 @@ export default function App() {
                             </p>
                         </div>
                     </div>
-                </section>
+                </AnimatedSection>
 
                 <GallerySection />
 
-                <section className="bg-surface-container-highest/20 px-4 py-16 text-center sm:px-6 md:px-8 md:py-40">
+                <AnimatedSection 
+                    className="bg-surface-container-highest/20 px-4 py-16 text-center sm:px-6 md:px-8 md:py-40"
+                    id="cta"
+                >
                     <div className="mx-auto max-w-2xl px-1">
                         <h2 className="font-headline text-3xl leading-tight text-on-surface sm:text-4xl md:text-6xl">
                             Pronto para transformar seu ambiente?
                         </h2>
                     </div>
-                </section>
+                </AnimatedSection>
             </main>
 
             <footer className="mt-12 w-full bg-stone-100 px-4 pb-[max(2.5rem,env(safe-area-inset-bottom,0px))] pt-12 dark:bg-stone-950 sm:px-6 md:px-8 md:py-16">
