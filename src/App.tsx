@@ -136,7 +136,16 @@ export default function App() {
                                 onError={capa.onImgError}
                             />
                         ) : null}
-                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/50" />
+                        {/* Topo: funde barra fixa → imagem (curto, não “corta” o hero) */}
+                        <div
+                            aria-hidden
+                            className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-24 bg-gradient-to-b from-stone-50/90 from-0% via-stone-50/25 via-45% to-transparent md:h-28 dark:from-stone-950/90 dark:via-stone-950/30"
+                        />
+                        {/* Fundo: transição moderada para a secção seguinte */}
+                        <div
+                            aria-hidden
+                            className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-36 bg-gradient-to-t from-background via-background/55 to-transparent md:h-44 dark:from-stone-950 dark:via-stone-950/55"
+                        />
                     </div>
                     <div className={`hero-copy relative z-10 w-full max-w-4xl px-4 text-center transition-all duration-1000 delay-300 transform ${heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
                         <h1 className="font-headline mb-6 text-[clamp(2.75rem,12vw,6rem)] leading-tight tracking-tight text-on-surface md:mb-8 md:text-8xl">
@@ -156,9 +165,9 @@ export default function App() {
 
                 <AnimatedSection
                     id="sobre"
-                    className="scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-background px-4 py-16 sm:px-6 md:px-8 md:py-24"
+                    className="relative scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-background px-4 py-16 sm:px-6 md:px-8 md:py-24"
                 >
-                    <div className="mx-auto max-w-3xl text-center">
+                    <div className="relative z-10 mx-auto max-w-3xl text-center">
                         <h2 className="font-headline text-2xl text-on-surface md:text-3xl">
                             Sobre a Limaréh
                         </h2>
@@ -169,13 +178,17 @@ export default function App() {
                             minimalista, sensorial e acolhedora.
                         </p>
                     </div>
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-28 bg-gradient-to-t from-[#f5f2ed] to-transparent md:h-36"
+                    />
                 </AnimatedSection>
 
                 <AnimatedSection
                     id="produto"
-                    className="scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-[#f5f2ed] px-4 py-16 sm:px-6 md:px-8 md:py-32"
+                    className="relative scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-[#f5f2ed] px-4 py-16 sm:px-6 md:px-8 md:py-32"
                 >
-                    <div className="mx-auto max-w-screen-xl">
+                    <div className="relative z-10 mx-auto max-w-screen-xl">
                         <div
                             className={`grid grid-cols-1 items-center gap-14 md:gap-20 ${imgProdutoMain.shouldRender ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}
                         >
@@ -287,6 +300,10 @@ export default function App() {
                             </div>
                         ) : null}
                     </div>
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-24 bg-gradient-to-t from-surface to-transparent"
+                    />
                 </AnimatedSection>
 
                 <AnimatedSection
@@ -337,19 +354,23 @@ export default function App() {
 
                 <GallerySection />
 
-                <AnimatedSection 
-                    className="bg-surface-container-highest/20 px-4 py-16 text-center sm:px-6 md:px-8 md:py-40"
+                <AnimatedSection
+                    className="relative bg-surface-container-highest/20 px-4 py-16 text-center sm:px-6 md:px-8 md:py-40"
                     id="cta"
                 >
-                    <div className="mx-auto max-w-2xl px-1">
+                    <div className="relative z-10 mx-auto max-w-2xl px-1">
                         <h2 className="font-headline text-3xl leading-tight text-on-surface sm:text-4xl md:text-6xl">
                             Pronto para transformar seu ambiente?
                         </h2>
                     </div>
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-24 bg-gradient-to-t from-stone-100 to-transparent dark:from-stone-950"
+                    />
                 </AnimatedSection>
             </main>
 
-            <footer className="mt-12 w-full bg-stone-100 px-4 pb-[max(2.5rem,env(safe-area-inset-bottom,0px))] pt-12 dark:bg-stone-950 sm:px-6 md:px-8 md:py-16">
+            <footer className="w-full bg-stone-100 px-4 pb-[max(2.5rem,env(safe-area-inset-bottom,0px))] pt-12 dark:bg-stone-950 sm:px-6 md:px-8 md:py-16">
                 <div className="mx-auto flex max-w-screen-2xl flex-col items-center justify-between gap-8 md:flex-row">
                     <div className="font-serif text-xl italic text-stone-800 dark:text-stone-200">
                         Limaréh

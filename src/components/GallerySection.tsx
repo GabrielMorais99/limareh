@@ -34,7 +34,7 @@ function imgUrl(file: string): string {
 }
 
 const sectionClass =
-    'scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-surface-container-low/30 px-4 py-14 sm:px-6 md:px-8 md:py-24';
+    'relative scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-surface-container-low/30 px-4 py-14 sm:px-6 md:px-8 md:py-24';
 
 const galleryItems: { file: string; alt: string }[] = [
     {
@@ -104,7 +104,7 @@ export function GallerySection() {
                 isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
             }`}
         >
-            <div className="mx-auto max-w-screen-2xl">
+            <div className="relative z-10 mx-auto max-w-screen-2xl">
                 <div className="mb-12 text-center md:mb-16">
                     <p className="font-label text-sm uppercase tracking-[0.25em] text-outline">
                         Galeria
@@ -143,6 +143,10 @@ export function GallerySection() {
                     })}
                 </div>
             </div>
+            <div
+                aria-hidden
+                className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-24 bg-gradient-to-t from-surface-container-highest/20 to-transparent"
+            />
         </section>
     );
 }
