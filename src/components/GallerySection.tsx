@@ -43,7 +43,7 @@ const galleryItems: { file: string; alt: string }[] = [
     },
     {
         file: 'galeria-02.jpg',
-        alt: 'Limaréh — Home Spray Jardim de Cristal, 200ml',
+        alt: 'Limaréh — Home Spray Jardim de Cristal, 250ml',
     },
 ];
 
@@ -70,10 +70,7 @@ export function GallerySection() {
         return (
             <section id="galeria" className={sectionClass}>
                 <div className="mx-auto max-w-screen-2xl py-16 text-center">
-                    <p className="font-label text-sm uppercase tracking-[0.25em] text-outline">
-                        Galeria
-                    </p>
-                    <p className="mt-4 font-body text-sm text-on-surface-variant">
+                    <p className="font-body text-sm text-on-surface-variant">
                         Carregando imagens…
                     </p>
                 </div>
@@ -85,10 +82,7 @@ export function GallerySection() {
         return (
             <section id="galeria" className={sectionClass}>
                 <div className="mx-auto max-w-screen-2xl py-16 text-center">
-                    <p className="font-label text-sm uppercase tracking-[0.25em] text-outline">
-                        Galeria
-                    </p>
-                    <p className="mt-4 font-body text-sm text-on-surface-variant">
+                    <p className="font-body text-sm text-on-surface-variant">
                         Imagens em breve.
                     </p>
                 </div>
@@ -106,10 +100,7 @@ export function GallerySection() {
         >
             <div className="relative z-10 mx-auto max-w-screen-2xl">
                 <div className="mb-12 text-center md:mb-16">
-                    <p className="font-label text-sm uppercase tracking-[0.25em] text-outline">
-                        Galeria
-                    </p>
-                    <h2 className="font-headline mt-3 text-2xl leading-tight text-on-surface sm:text-3xl md:text-4xl">
+                    <h2 className="font-headline text-2xl leading-tight text-on-surface sm:text-3xl md:text-4xl">
                         Momentos Limaréh
                     </h2>
                     <p className="mx-auto mt-4 max-w-[42rem] font-body text-on-surface-variant">
@@ -143,9 +134,10 @@ export function GallerySection() {
                     })}
                 </div>
             </div>
+            {/* Transição suave → secção seguinte (bg-surface / #faf9f7), sem faixa cinza sólida */}
             <div
                 aria-hidden
-                className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-24 bg-gradient-to-t from-surface-container-highest/20 to-transparent"
+                className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-36 bg-gradient-to-t from-background from-0% via-background/45 via-30% to-transparent to-100% md:h-44 dark:from-stone-950 dark:via-stone-950/40"
             />
         </section>
     );

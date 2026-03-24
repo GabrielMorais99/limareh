@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState, ReactNode } from 'react';
 import { GallerySection } from './components/GallerySection';
+import {
+    ContraEmbalagemContent,
+    RotuloTecnicoContent,
+} from './components/ProductPackagingInfo';
 import { InstagramIcon } from './components/InstagramIcon';
 import { useImgsManifest, useImgSlot } from './context/ImgsManifestContext';
 import { INSTAGRAM_URL } from './lib/links';
@@ -164,23 +168,13 @@ export default function App() {
                 </section>
 
                 <AnimatedSection
-                    id="sobre"
+                    id="contra-embalagem"
                     className="relative scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-background px-4 py-16 sm:px-6 md:px-8 md:py-24"
                 >
-                    <div className="relative z-10 mx-auto max-w-3xl text-center">
-                        <h2 className="font-headline text-2xl text-on-surface md:text-3xl">
-                            Sobre a Limaréh
-                        </h2>
-                        <p className="mt-6 font-body text-lg font-light leading-relaxed text-on-surface-variant">
-                            A Limaréh nasce do desejo de traduzir bem-estar e
-                            sofisticação em fragrâncias de ambiente. Cada
-                            criação é pensada como uma assinatura olfativa —
-                            minimalista, sensorial e acolhedora.
-                        </p>
-                    </div>
+                    <ContraEmbalagemContent />
                     <div
                         aria-hidden
-                        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-28 bg-gradient-to-t from-[#f5f2ed] to-transparent md:h-36"
+                        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-20 bg-gradient-to-t from-surface to-transparent"
                     />
                 </AnimatedSection>
 
@@ -188,6 +182,10 @@ export default function App() {
                     id="produto"
                     className="relative scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-[#f5f2ed] px-4 py-16 sm:px-6 md:px-8 md:py-32"
                 >
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-28 bg-gradient-to-b from-background to-transparent md:h-36 dark:from-stone-950"
+                    />
                     <div className="relative z-10 mx-auto max-w-screen-xl">
                         <div
                             className={`grid grid-cols-1 items-center gap-14 md:gap-20 ${imgProdutoMain.shouldRender ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}
@@ -223,7 +221,7 @@ export default function App() {
                                         Jardim de Cristal
                                     </h2>
                                     <p className="font-label text-sm uppercase tracking-[0.25em] text-on-surface-variant">
-                                        Home Spray · 200ml
+                                        Home Spray · 250ml
                                     </p>
                                 </div>
                                 <p className="mx-auto max-w-xl font-body text-lg font-light leading-[1.75] text-on-surface-variant">
@@ -240,7 +238,7 @@ export default function App() {
                                 <div className="flex flex-wrap justify-center gap-3 md:gap-4">
                                     {[
                                         'Frescor cristalino',
-                                        '200ml',
+                                        '250ml',
                                         'Home spray',
                                     ].map((tag) => (
                                         <div
@@ -306,12 +304,21 @@ export default function App() {
                     />
                 </AnimatedSection>
 
+                <GallerySection />
+
+                <AnimatedSection
+                    id="informacoes-rotulo"
+                    className="relative scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-surface px-4 py-16 sm:px-6 md:px-8 md:py-24"
+                >
+                    <RotuloTecnicoContent />
+                </AnimatedSection>
+
                 <AnimatedSection
                     id="valores"
-                    className="bg-surface px-4 py-16 sm:px-6 md:px-8 md:py-24"
+                    className="relative bg-surface px-4 py-16 sm:px-6 md:px-8 md:py-24"
                     delay={200}
                 >
-                    <div className="mx-auto flex max-w-screen-xl flex-col items-stretch justify-between gap-12 md:flex-row md:items-start md:gap-16">
+                    <div className="relative z-10 mx-auto flex max-w-screen-xl flex-col items-stretch justify-between gap-12 md:flex-row md:items-start md:gap-16">
                         <div className="flex w-full flex-1 flex-col items-center space-y-4 border-l-0 pl-0 text-center md:items-start md:border-l md:border-outline-variant/30 md:pl-6 md:text-left lg:pl-8">
                             <span className="material-symbols-outlined mb-2 text-3xl text-primary">
                                 eco
@@ -350,14 +357,20 @@ export default function App() {
                             </p>
                         </div>
                     </div>
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-36 bg-gradient-to-t from-surface-container-highest/25 from-0% via-surface-container-highest/10 via-35% to-transparent to-100% md:h-48 dark:from-stone-800/35 dark:via-stone-800/15"
+                    />
                 </AnimatedSection>
-
-                <GallerySection />
 
                 <AnimatedSection
                     className="relative bg-surface-container-highest/20 px-4 py-16 text-center sm:px-6 md:px-8 md:py-40"
                     id="cta"
                 >
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-32 bg-gradient-to-b from-background from-0% via-background/55 via-45% to-transparent to-100% md:h-40 dark:from-stone-950 dark:via-stone-950/50"
+                    />
                     <div className="relative z-10 mx-auto max-w-2xl px-1">
                         <h2 className="font-headline text-3xl leading-tight text-on-surface sm:text-4xl md:text-6xl">
                             Pronto para transformar seu ambiente?
