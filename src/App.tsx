@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, ReactNode } from 'react';
 import { GallerySection } from './components/GallerySection';
 import { InstagramIcon } from './components/InstagramIcon';
 import { useImgsManifest, useImgSlot } from './context/ImgsManifestContext';
@@ -7,9 +7,9 @@ import { INSTAGRAM_URL } from './lib/links';
 /**
  * Hook para detectar quando um elemento entra na viewport.
  */
-function useInView(options = {}) {
+function useInView(options: IntersectionObserverInit = {}) {
     const [isInView, setIsInView] = useState(false);
-    const ref = useRef(null);
+    const ref = useRef<HTMLElement>(null);
 
     useEffect(() => {
         const observer = new IntersectionObserver(([entry]) => {
@@ -30,13 +30,20 @@ function useInView(options = {}) {
         };
     }, [options]);
 
-    return [ref, isInView];
+    return [ref, isInView] as const;
+}
+
+interface AnimatedSectionProps {
+    children: ReactNode;
+    id?: string;
+    className?: string;
+    delay?: number;
 }
 
 /**
  * Componente Wrapper para seções animadas.
  */
-function AnimatedSection({ children, id, className, delay = 0 }) {
+function AnimatedSection({ children, id, className, delay = 0 }: AnimatedSectionProps) {
     const [ref, isInView] = useInView({ threshold: 0.1 });
     
     return (

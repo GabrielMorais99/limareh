@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { useImgsManifest, useImgSlot } from '../context/ImgsManifestContext';
 
-function useInView(options = {}) {
+function useInView(options: IntersectionObserverInit = {}) {
     const [isInView, setIsInView] = useState(false);
-    const ref = useRef(null);
+    const ref = useRef<HTMLElement>(null);
 
     useEffect(() => {
         const observer = new IntersectionObserver(([entry]) => {
@@ -24,7 +24,7 @@ function useInView(options = {}) {
         };
     }, [options]);
 
-    return [ref, isInView];
+    return [ref, isInView] as const;
 }
 
 function imgUrl(file: string): string {
