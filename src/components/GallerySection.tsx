@@ -91,11 +91,13 @@ export function GallerySection() {
     }
 
     return (
-        <section 
-            id="galeria" 
+        <section
+            id="galeria"
             ref={sectionRef}
             className={`${sectionClass} transition-all duration-1000 ease-out transform ${
-                isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+                isInView
+                    ? 'opacity-100 translate-y-0'
+                    : 'opacity-0 translate-y-12'
             }`}
         >
             <div className="relative z-10 mx-auto max-w-screen-2xl">
@@ -116,9 +118,13 @@ export function GallerySection() {
                             <div
                                 key={item.file}
                                 className={`group relative aspect-[3/4] w-full max-h-[min(85vh,640px)] overflow-hidden rounded-xl bg-[#f0ebe7] ring-1 ring-stone-200/60 transition-all duration-1000 transform ${
-                                    isInView ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                                    isInView
+                                        ? 'opacity-100 scale-100'
+                                        : 'opacity-0 scale-95'
                                 }`}
-                                style={{ transitionDelay: `${200 + i * 200}ms` }}
+                                style={{
+                                    transitionDelay: `${200 + i * 200}ms`,
+                                }}
                             >
                                 <img
                                     alt={item.alt}
