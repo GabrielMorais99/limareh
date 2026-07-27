@@ -19,9 +19,80 @@ html {
 body {
     @apply font-body bg-background text-on-surface overflow-x-hidden;
     -webkit-tap-highlight-color: rgba(47, 51, 49, 0.08);
+    background-image:
+        radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.58), transparent 18rem),
+        radial-gradient(circle at 82% 12%, rgba(239, 229, 216, 0.46), transparent 22rem),
+        radial-gradient(circle at 52% 88%, rgba(255, 250, 242, 0.42), transparent 24rem);
+    background-attachment: fixed;
 }
 
 .hero-copy {
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+}
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.34), transparent 20rem),
+        radial-gradient(circle at 82% 28%, rgba(255, 242, 218, 0.28), transparent 24rem),
+        radial-gradient(circle at 50% 88%, rgba(255, 255, 255, 0.22), transparent 22rem);
+    mix-blend-mode: soft-light;
+    opacity: 0.85;
+    animation: site-soft-glow 14s ease-in-out infinite alternate;
+}
+
+.fragrance-bg {
+    transform-origin: center;
+    animation: fragrance-bg-breathe 18s ease-in-out infinite alternate;
+}
+
+.fragrance-product {
+    animation: fragrance-product-breathe 9s ease-in-out infinite;
+}
+
+@keyframes site-soft-glow {
+    from {
+        opacity: 0.55;
+        transform: translate3d(-0.4%, -0.2%, 0);
+    }
+
+    to {
+        opacity: 0.9;
+        transform: translate3d(0.4%, 0.25%, 0);
+    }
+}
+
+@keyframes fragrance-bg-breathe {
+    from {
+        transform: scale(1.02);
+        filter: brightness(1);
+    }
+
+    to {
+        transform: scale(1.032);
+        filter: brightness(1.035);
+    }
+}
+
+@keyframes fragrance-product-breathe {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    50% {
+        transform: translate3d(0, -0.16rem, 0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body::after,
+    .fragrance-bg,
+    .fragrance-product {
+        animation: none;
+    }
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, ReactNode } from 'react';
-import { GallerySection } from './components/GallerySection';
+import { FragrancesCatalog } from './components/FragrancesCatalog';
 import {
     ContraEmbalagemContent,
     RotuloTecnicoContent,
@@ -71,21 +71,16 @@ function imgUrl(file: string): string {
 }
 
 const imgHero = imgUrl('capa.jpg');
-const imgProduto = imgUrl('jardim-de-cristal.png');
-const imgProdutoDetalhe1 = imgUrl('produto-extra-1.png');
-const imgProdutoDetalhe2 = imgUrl('produto-extra-2.png');
-
+const imgHeroFallback = imgUrl('capa-home-sprays.jpeg');
 export default function App() {
     const { status: imgsStatus, manifest: imgsManifest } = useImgsManifest();
     const capa = useImgSlot('capa.jpg');
+    const capaHomeSprays = useImgSlot('capa-home-sprays.jpeg');
+    const heroSrc = capa.shouldRender ? imgHero : imgHeroFallback;
     const heroSrcSet =
         imgsStatus === 'ok' && imgsManifest['capa-2x.jpg'] === true
-            ? `${imgHero} 1x, ${imgUrl('capa-2x.jpg')} 2x`
+            ? `${heroSrc} 1x, ${imgUrl('capa-2x.jpg')} 2x`
             : undefined;
-    const imgProdutoMain = useImgSlot('jardim-de-cristal.png');
-    const imgExtra1 = useImgSlot('produto-extra-1.png');
-    const imgExtra2 = useImgSlot('produto-extra-2.png');
-
     const [heroRef, heroInView] = useInView();
 
     return (
@@ -128,14 +123,14 @@ export default function App() {
                     className="relative isolate flex min-h-[100dvh] min-h-screen items-center justify-center overflow-hidden px-4 pb-[max(4rem,env(safe-area-inset-bottom,0px))] pt-[calc(6rem+env(safe-area-inset-top,0px))] sm:px-6 md:px-8 md:pb-16 md:pt-[calc(5rem+env(safe-area-inset-top,0px))]"
                 >
                     <div className={`absolute inset-0 z-0 bg-[#e8e4e0] transition-opacity duration-1000 ${heroInView ? 'opacity-100' : 'opacity-0'}`}>
-                        {capa.shouldRender ? (
+                        {capa.shouldRender || capaHomeSprays.shouldRender ? (
                             <img
                                 alt="Limaréh — ambiente natural e sofisticado"
                                 className="h-full w-full min-h-full min-w-full object-cover object-center [image-rendering:auto] [transform:translateZ(0)] [backface-visibility:hidden]"
                                 decoding="async"
                                 fetchPriority="high"
                                 sizes="100vw"
-                                src={imgHero}
+                                src={heroSrc}
                                 srcSet={heroSrcSet}
                                 onError={capa.onImgError}
                             />
@@ -178,148 +173,22 @@ export default function App() {
                     />
                 </AnimatedSection>
 
-                <AnimatedSection
-                    id="produto"
-                    className="relative scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-[#f5f2ed] px-4 py-16 sm:px-6 md:px-8 md:py-32"
-                >
-                    <div
-                        aria-hidden
-                        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-28 bg-gradient-to-b from-background to-transparent md:h-36 dark:from-stone-950"
-                    />
-                    <div className="relative z-10 mx-auto max-w-screen-xl">
-                        <div
-                            className={`grid grid-cols-1 items-center gap-14 md:gap-20 ${imgProdutoMain.shouldRender ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}
-                        >
-                            {imgProdutoMain.shouldRender ? (
-                                <div className="order-2 flex justify-center md:order-1">
-                                    <div className="group relative w-full max-w-[min(100%,28rem)] rounded-xl bg-[#f5f0ea] p-6 shadow-sm ring-1 ring-stone-200/80">
-                                        <div className="absolute -inset-4 rounded-full bg-white/50 opacity-0 blur-3xl transition-opacity duration-700 group-hover:opacity-100" />
-                                        <img
-                                            alt="Limaréh Jardim de Cristal — Home Spray"
-                                            className="relative mx-auto h-auto max-h-[min(85vh,720px)] w-full object-contain object-center [image-rendering:auto]"
-                                            decoding="async"
-                                            fetchPriority="high"
-                                            sizes="(min-width: 768px) 28rem, 100vw"
-                                            src={imgProduto}
-                                            onError={imgProdutoMain.onImgError}
-                                        />
-                                    </div>
-                                </div>
-                            ) : null}
-                            <div
-                                className={`order-1 space-y-10 text-center md:order-2 md:pl-2 ${
-                                    imgProdutoMain.shouldRender
-                                        ? 'md:text-left'
-                                        : 'md:mx-auto md:max-w-3xl md:text-center'
-                                }`}
-                            >
-                                <div className="space-y-4">
-                                    <span className="text-xs font-semibold uppercase tracking-[0.2em] text-outline">
-                                        Linha assinatura
-                                    </span>
-                                    <h2 className="font-headline text-3xl italic leading-tight text-on-surface sm:text-4xl md:text-5xl">
-                                        Jardim de Cristal
-                                    </h2>
-                                    <p className="font-label text-sm uppercase tracking-[0.25em] text-on-surface-variant">
-                                        Home Spray · 250ml
-                                    </p>
-                                </div>
-                                <p className="mx-auto max-w-xl font-body text-lg font-light leading-[1.75] text-on-surface-variant">
-                                    Frasco em vidro cristalino com acabamento
-                                    dourado e fórmula com brilho perolado que
-                                    dança na luz. O{' '}
-                                    <span className="text-on-surface">
-                                        Jardim de Cristal
-                                    </span>{' '}
-                                    traduz delicadeza e frescor em cada
-                                    borrifada — presença elegante para ambientes
-                                    que pedem quietude com luminosidade.
-                                </p>
-                                <div className="flex flex-wrap justify-center gap-3 md:gap-4">
-                                    {[
-                                        'Frescor cristalino',
-                                        '250ml',
-                                        'Home spray',
-                                    ].map((tag) => (
-                                        <div
-                                            key={tag}
-                                            className="rounded-sm bg-secondary-container px-6 py-2"
-                                        >
-                                            <span className="text-[0.6875rem] font-bold uppercase tracking-widest text-on-secondary-container">
-                                                {tag}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="border-t border-outline-variant/20 py-6 md:py-8">
-                                    <div className="flex flex-col gap-6 md:gap-8">
-                                        <p className="text-sm italic text-on-surface-variant">
-                                            “A delicadeza infinita envolta em um
-                                            frescor cristalino.”
-                                        </p>
-                                        <p className="font-label text-xs uppercase tracking-widest text-outline">
-                                            limareh aromas
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {imgExtra1.shouldRender || imgExtra2.shouldRender ? (
-                            <div
-                                className={`mt-16 grid grid-cols-1 gap-6 md:mt-20 md:gap-8 ${imgExtra1.shouldRender && imgExtra2.shouldRender ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}
-                            >
-                                {imgExtra1.shouldRender ? (
-                                    <div className="flex min-h-[280px] overflow-hidden rounded-xl bg-[#f5f0ea] p-4 shadow-sm ring-1 ring-stone-200/80 md:min-h-[320px]">
-                                        <img
-                                            alt="Limaréh Jardim de Cristal em detalhe — lifestyle"
-                                            className="m-auto h-full max-h-[min(70vh,640px)] w-full object-contain object-center"
-                                            decoding="async"
-                                            loading="lazy"
-                                            sizes="(min-width: 768px) 50vw, 100vw"
-                                            src={imgProdutoDetalhe1}
-                                            onError={imgExtra1.onImgError}
-                                        />
-                                    </div>
-                                ) : null}
-                                {imgExtra2.shouldRender ? (
-                                    <div className="flex min-h-[280px] overflow-hidden rounded-xl bg-[#f5f0ea] p-4 shadow-sm ring-1 ring-stone-200/80 md:min-h-[320px]">
-                                        <img
-                                            alt="Limaréh Jardim de Cristal — borrifação"
-                                            className="m-auto h-full max-h-[min(70vh,640px)] w-full object-contain object-center"
-                                            decoding="async"
-                                            loading="lazy"
-                                            sizes="(min-width: 768px) 50vw, 100vw"
-                                            src={imgProdutoDetalhe2}
-                                            onError={imgExtra2.onImgError}
-                                        />
-                                    </div>
-                                ) : null}
-                            </div>
-                        ) : null}
-                    </div>
-                    <div
-                        aria-hidden
-                        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-24 bg-gradient-to-t from-surface to-transparent"
-                    />
-                </AnimatedSection>
-
-                <GallerySection />
+                <FragrancesCatalog />
 
                 <AnimatedSection
                     id="informacoes-rotulo"
-                    className="relative scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-surface px-4 py-16 sm:px-6 md:px-8 md:py-24"
+                    className="relative scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-[#f6f0e7] px-4 py-16 sm:px-6 md:px-8 md:py-24"
                 >
                     <RotuloTecnicoContent />
                 </AnimatedSection>
 
                 <AnimatedSection
                     id="valores"
-                    className="relative bg-surface px-4 py-16 sm:px-6 md:px-8 md:py-24"
+                    className="relative bg-[#f6f0e7] px-4 py-16 sm:px-6 md:px-8 md:py-24"
                     delay={200}
                 >
                     <div className="relative z-10 mx-auto flex max-w-screen-xl flex-col items-stretch justify-between gap-12 md:flex-row md:items-start md:gap-16">
-                        <div className="flex w-full flex-1 flex-col items-center space-y-4 border-l-0 pl-0 text-center md:items-start md:border-l md:border-outline-variant/30 md:pl-6 md:text-left lg:pl-8">
+                        <div className="flex w-full flex-1 flex-col items-center space-y-4 border-l-0 pl-0 text-center md:items-start md:text-left">
                             <span className="material-symbols-outlined mb-2 text-3xl text-primary">
                                 eco
                             </span>
@@ -332,7 +201,7 @@ export default function App() {
                                 ftalatos nocivos.
                             </p>
                         </div>
-                        <div className="flex w-full flex-1 flex-col items-center space-y-4 border-l-0 pl-0 text-center md:items-start md:border-l md:border-outline-variant/30 md:pl-6 md:text-left lg:pl-8">
+                        <div className="flex w-full flex-1 flex-col items-center space-y-4 border-l-0 pl-0 text-center md:items-start md:text-left">
                             <span className="material-symbols-outlined mb-2 text-3xl text-primary">
                                 cruelty_free
                             </span>
@@ -344,7 +213,7 @@ export default function App() {
                                 em toda a cadeia de formulação.
                             </p>
                         </div>
-                        <div className="flex w-full flex-1 flex-col items-center space-y-4 border-l-0 pl-0 text-center md:items-start md:border-l md:border-outline-variant/30 md:pl-6 md:text-left lg:pl-8">
+                        <div className="flex w-full flex-1 flex-col items-center space-y-4 border-l-0 pl-0 text-center md:items-start md:text-left">
                             <span className="material-symbols-outlined mb-2 text-3xl text-primary">
                                 schedule
                             </span>
@@ -359,18 +228,19 @@ export default function App() {
                     </div>
                     <div
                         aria-hidden
-                        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-36 bg-gradient-to-t from-surface-container-highest/25 from-0% via-surface-container-highest/10 via-35% to-transparent to-100% md:h-48 dark:from-stone-800/35 dark:via-stone-800/15"
+                        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-24 bg-gradient-to-t from-[#f5f1eb] to-transparent md:h-32"
                     />
                 </AnimatedSection>
 
                 <AnimatedSection
-                    className="relative bg-surface-container-highest/20 px-4 py-16 text-center sm:px-6 md:px-8 md:py-40"
+                    className="relative overflow-hidden bg-[#f6f0e7] px-4 py-16 text-center sm:px-6 md:px-8 md:py-40"
                     id="cta"
                 >
                     <div
                         aria-hidden
-                        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-32 bg-gradient-to-b from-background from-0% via-background/55 via-45% to-transparent to-100% md:h-40 dark:from-stone-950 dark:via-stone-950/50"
+                        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-32 bg-gradient-to-b from-[#f6f0e7] to-transparent md:h-40"
                     />
+                    <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/55 blur-3xl" />
                     <div className="relative z-10 mx-auto max-w-2xl px-1">
                         <h2 className="font-headline text-3xl leading-tight text-on-surface sm:text-4xl md:text-6xl">
                             Pronto para transformar seu ambiente?
@@ -378,12 +248,12 @@ export default function App() {
                     </div>
                     <div
                         aria-hidden
-                        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-24 bg-gradient-to-t from-stone-100 to-transparent dark:from-stone-950"
+                        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-24 bg-gradient-to-t from-[#f6f0e7] to-transparent"
                     />
                 </AnimatedSection>
             </main>
 
-            <footer className="w-full bg-stone-100 px-4 pb-[max(2.5rem,env(safe-area-inset-bottom,0px))] pt-12 dark:bg-stone-950 sm:px-6 md:px-8 md:py-16">
+            <footer className="w-full bg-[#f6f0e7] px-4 pb-[max(2.5rem,env(safe-area-inset-bottom,0px))] pt-12 dark:bg-stone-950 sm:px-6 md:px-8 md:py-16">
                 <div className="mx-auto flex max-w-screen-2xl flex-col items-center justify-between gap-8 md:flex-row">
                     <div className="font-serif text-xl italic text-stone-800 dark:text-stone-200">
                         Limaréh
@@ -408,3 +278,4 @@ export default function App() {
         </div>
     );
 }
+

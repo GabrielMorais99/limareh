@@ -34,44 +34,68 @@ function imgUrl(file: string): string {
 }
 
 const sectionClass =
-    'relative scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-surface-container-low/30 px-4 py-14 sm:px-6 md:px-8 md:py-24';
+    'relative scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-background px-4 py-14 sm:px-6 md:px-8 md:py-24 dark:bg-stone-950';
 
-const galleryItems: { file: string; alt: string }[] = [
+const galleryItems: {
+    file: string;
+    alt: string;
+    imgClass: string;
+    cardClass: string;
+    tall?: boolean;
+}[] = [
     {
-        file: 'galeria-01.jpg',
-        alt: 'Limaréh — Jardim de Cristal em uso',
+        file: 'banner-brisa-lilas.jpeg',
+        alt: 'Limaréh — inspiração lavanda para Brisa Lilás',
+        imgClass: 'object-cover object-center',
+        cardClass: '',
     },
     {
-        file: 'galeria-02.jpg',
-        alt: 'Limaréh — Home Spray Jardim de Cristal, 250ml',
+        file: 'inspiracao-jardim-de-cristal.jpeg',
+        alt: 'Limaréh — inspiração floral Jardim de Cristal',
+        imgClass: 'object-cover object-center',
+        cardClass: '',
+    },
+    {
+        file: 'inspiracao-lavanda.jpeg',
+        alt: 'Limaréh — campo de lavanda para Brisa Lilás',
+        imgClass: 'object-cover object-center',
+        cardClass: '',
+        tall: true,
+    },
+    {
+        file: 'inspiracao-citrica.jpeg',
+        alt: 'Limaréh — inspiração cítrica para Campo dos Sonhos',
+        imgClass: 'object-cover object-center',
+        cardClass: '',
+        tall: true,
+    },
+    {
+        file: 'inspiracao-luz-da-tarde.jpeg',
+        alt: 'Limaréh — inspiração dourada para Luz da Tarde',
+        imgClass: 'object-cover object-center',
+        cardClass: '',
     },
 ];
 
 export function GallerySection() {
     const { status, manifest } = useImgsManifest();
-    const g1 = useImgSlot('galeria-01.jpg');
-    const g2 = useImgSlot('galeria-02.jpg');
-    const [sectionRef, isInView] = useInView({ threshold: 0.1 });
-
-    const slots = [g1, g2];
+    const slots = galleryItems.map((item) => useImgSlot(item.file));
+    const [sectionRef, isInView] = useInView({ threshold: 0.05 });
 
     const allFailed = useMemo(() => {
         if (status === 'loading') return false;
         if (status === 'ok') {
-            return (
-                manifest['galeria-01.jpg'] !== true &&
-                manifest['galeria-02.jpg'] !== true
-            );
+            return galleryItems.every((item) => manifest[item.file] !== true);
         }
-        return !g1.shouldRender && !g2.shouldRender;
-    }, [status, manifest, g1.shouldRender, g2.shouldRender]);
+        return slots.every((slot) => !slot.shouldRender);
+    }, [status, manifest, slots]);
 
     if (status === 'loading') {
         return (
             <section id="galeria" className={sectionClass}>
                 <div className="mx-auto max-w-screen-2xl py-16 text-center">
                     <p className="font-body text-sm text-on-surface-variant">
-                        Carregando imagens…
+                        Carregando imagens...
                     </p>
                 </div>
             </section>
@@ -106,32 +130,34 @@ export function GallerySection() {
                         Momentos Limaréh
                     </h2>
                     <p className="mx-auto mt-4 max-w-[42rem] font-body text-on-surface-variant">
-                        Ambientes, detalhes e a assinatura olfativa da marca em
-                        imagens.
+                        Detalhes de atmosfera que acompanham as fragrâncias da marca.
                     </p>
                 </div>
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
                     {galleryItems.map((item, i) => {
                         const slot = slots[i];
                         if (!slot.shouldRender) return null;
                         return (
                             <div
                                 key={item.file}
-                                className={`group relative aspect-[3/4] w-full max-h-[min(85vh,640px)] overflow-hidden rounded-xl bg-[#f0ebe7] ring-1 ring-stone-200/60 transition-all duration-1000 transform ${
+                                className={`group relative w-full overflow-hidden rounded-lg transition-all duration-1000 transform ${item.cardClass} ${
+                                    item.tall ? 'row-span-2' : ''
+                                } ${
                                     isInView
                                         ? 'opacity-100 scale-100'
                                         : 'opacity-0 scale-95'
                                 }`}
                                 style={{
-                                    transitionDelay: `${200 + i * 200}ms`,
+                                    transitionDelay: `${200 + i * 100}ms`,
+                                    aspectRatio: item.tall ? '9/16' : '16/10',
                                 }}
                             >
                                 <img
                                     alt={item.alt}
-                                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-[2000ms] group-hover:scale-105"
+                                    className={`absolute inset-0 h-full w-full transition-transform duration-[2000ms] group-hover:scale-105 ${item.imgClass}`}
                                     decoding="async"
-                                    loading="eager"
-                                    sizes="(max-width: 768px) 100vw, 50vw"
+                                    loading="lazy"
+                                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                                     src={imgUrl(item.file)}
                                     onError={slot.onImgError}
                                 />
@@ -140,11 +166,6 @@ export function GallerySection() {
                     })}
                 </div>
             </div>
-            {/* Transição suave → secção seguinte (bg-surface / #faf9f7), sem faixa cinza sólida */}
-            <div
-                aria-hidden
-                className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-36 bg-gradient-to-t from-background from-0% via-background/45 via-30% to-transparent to-100% md:h-44 dark:from-stone-950 dark:via-stone-950/40"
-            />
         </section>
     );
 }

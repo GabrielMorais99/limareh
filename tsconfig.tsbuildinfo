@@ -1,1 +1,1 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/gallerysection.tsx","./src/components/safeimg.tsx","./src/components/siteqr.tsx","./src/lib/links.ts"],"version":"5.6.3"}
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/fragrancescatalog.tsx","./src/components/gallerysection.tsx","./src/components/instagramicon.tsx","./src/components/productpackaginginfo.tsx","./src/components/safeimg.tsx","./src/context/imgsmanifestcontext.tsx","./src/lib/links.ts"],"version":"5.6.3"}
