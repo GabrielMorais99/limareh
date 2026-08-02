@@ -50,7 +50,7 @@ const fragrances: Fragrance[] = [
     {
         key: 'brisa-lilas',
         name: 'Brisa Lilás',
-        subtitle: 'Home Spray · 250ml',
+        subtitle: 'Home Spray · 200ml',
         description:
             'Suave como a brisa do entardecer sobre um campo de lavanda. Conforto floral que acalma o espaço e convida à respiração profunda.',
         notes: ['Lavanda', 'Toque amadeirado'],
@@ -63,7 +63,7 @@ const fragrances: Fragrance[] = [
     {
         key: 'campo-dos-sonhos',
         name: 'Campo dos Sonhos',
-        subtitle: 'Home Spray · 250ml',
+        subtitle: 'Home Spray · 200ml',
         description:
             'A leveza de um campo florido ao amanhecer. Notas verdes e florais que evocam liberdade, sonho e a doçura do presente.',
         notes: ['Flores silvestres', 'Verde natural'],
@@ -76,7 +76,7 @@ const fragrances: Fragrance[] = [
     {
         key: 'luz-da-tarde',
         name: 'Luz da Tarde',
-        subtitle: 'Home Spray · 250ml',
+        subtitle: 'Home Spray · 200ml',
         description:
             'O calor dourado da tarde em notas cítricas e envolventes. Brilho, leveza e memória de bons momentos em cada borrifada.',
         notes: ['Cítrico luminoso', 'Aconchego'],
@@ -89,7 +89,7 @@ const fragrances: Fragrance[] = [
     {
         key: 'jardim-de-cristal',
         name: 'Jardim de Cristal',
-        subtitle: 'Home Spray · 250ml',
+        subtitle: 'Home Spray · 200ml',
         description:
             'A delicadeza infinita envolta em um frescor cristalino. Flores brancas e acordes aquosos que dançam na luz, como orvalho sobre pétalas de vidro.',
         notes: ['Frescor cristalino', 'Flores brancas'],

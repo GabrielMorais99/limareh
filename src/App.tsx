@@ -94,10 +94,13 @@ export default function App() {
                 <div className="mx-auto flex max-w-screen-2xl items-center justify-between gap-3 px-4 py-3 sm:px-6 md:px-8 md:py-6">
                     <div className="flex min-w-0 flex-1 items-center gap-6 md:gap-12">
                         <a
-                            className="font-serif text-lg tracking-[0.2em] text-stone-800 dark:text-stone-100 sm:text-xl md:text-2xl"
+                            className="flex flex-col items-center font-serif text-lg tracking-[0.2em] text-stone-800 dark:text-stone-100 sm:text-xl md:text-2xl"
                             href="#top"
                         >
-                            LIMARÉH
+                            <span>LIMARÉH</span>
+                            <span className="text-[0.5em] font-normal tracking-[0.3em] uppercase">
+                                Aromas
+                            </span>
                         </a>
                     </div>
                     <div className="flex shrink-0 items-center gap-1 sm:gap-3">
@@ -147,7 +150,7 @@ export default function App() {
                         />
                     </div>
                     <div className={`hero-copy relative z-10 w-full max-w-4xl px-4 text-center transition-all duration-1000 delay-300 transform ${heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-                        <h1 className="font-headline mb-6 text-[clamp(2.75rem,12vw,6rem)] leading-tight tracking-tight text-on-surface md:mb-8 md:text-8xl">
+                        <h1 className="mb-6 font-serif text-[clamp(2.75rem,12vw,6rem)] font-normal leading-none tracking-[0.08em] text-on-surface md:mb-8 md:text-8xl">
                             Limaréh
                         </h1>
                         <p className="mx-auto max-w-2xl px-1 font-body text-lg font-light italic leading-snug text-on-surface-variant sm:text-xl md:text-2xl">

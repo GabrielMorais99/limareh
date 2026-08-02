@@ -58,6 +58,7 @@ export default {
         "surface-bright": "#faf9f7",
       },
       fontFamily: {
+        serif: ["Noto Serif", "serif"],
         headline: ["Noto Serif", "serif"],
         body: ["Manrope", "system-ui", "sans-serif"],
         label: ["Manrope", "system-ui", "sans-serif"],
