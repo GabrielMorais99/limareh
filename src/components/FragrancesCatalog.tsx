@@ -1,7 +1,8 @@
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { SafeImg } from './SafeImg';
-import { imgUrl } from '../lib/img';
+import { InstagramIcon } from './InstagramIcon';
+import { INSTAGRAM_DM_URL } from '../lib/links';
 import { EASE_SOFT, fadeUp, inViewOnce, mistIn, stagger } from '../lib/motion';
 
 interface Fragrance {
@@ -154,7 +155,7 @@ function FragranceCard({ fragrance }: { fragrance: Fragrance }) {
                     decoding="async"
                     loading="lazy"
                     sizes="100vw"
-                    src={imgUrl(fragrance.backgroundImg)}
+                    file={fragrance.backgroundImg}
                     style={{ objectPosition: fragrance.backgroundPosition }}
                 />
             </motion.div>
@@ -193,7 +194,7 @@ function FragranceCard({ fragrance }: { fragrance: Fragrance }) {
                             decoding="async"
                             loading="lazy"
                             sizes="(min-width: 768px) 28rem, 78vw"
-                            src={imgUrl(fragrance.productImg)}
+                            file={fragrance.productImg}
                         />
                     </motion.div>
                 </motion.div>
@@ -251,6 +252,22 @@ function FragranceCard({ fragrance }: { fragrance: Fragrance }) {
                                     </span>
                                 </motion.div>
                             ))}
+                        </motion.div>
+                        <motion.div variants={fadeUp}>
+                            <motion.a
+                                href={INSTAGRAM_DM_URL}
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label={`Quero o ${fragrance.name} — conversar pelo Instagram`}
+                                whileHover={{ x: 4 }}
+                                whileTap={{ scale: 0.97 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                                className="inline-flex min-h-[48px] items-center gap-3 border border-stone-900 px-6 py-3 font-label text-xs font-semibold uppercase tracking-[0.2em] text-stone-900 transition-colors duration-300 hover:bg-stone-900 hover:text-stone-50"
+                            >
+                                <InstagramIcon className="h-4 w-4" />
+                                Quero este
+                                <span aria-hidden>→</span>
+                            </motion.a>
                         </motion.div>
                     </motion.div>
                 </motion.div>
@@ -319,7 +336,7 @@ function CollectionShowcase() {
                             decoding="async"
                             loading="lazy"
                             sizes="(min-width: 768px) 34rem, 92vw"
-                            src={imgUrl('catalogo-home-sprays.jpeg')}
+                            file={'catalogo-home-sprays.jpeg'}
                         />
                     </motion.div>
                 </motion.div>

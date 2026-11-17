@@ -22,7 +22,6 @@ import {
     RabbitIcon,
 } from './components/Icons';
 import { INSTAGRAM_URL } from './lib/links';
-import { imgUrl } from './lib/img';
 import { EASE_SOFT, fadeUp, inViewOnce, mistIn, stagger } from './lib/motion';
 
 interface RevealSectionProps {
@@ -77,7 +76,7 @@ function Hero() {
                         decoding="async"
                         fetchPriority="high"
                         sizes="100vw"
-                        src={imgUrl('capa-home-sprays.jpeg')}
+                        file={'capa-home-sprays.jpeg'}
                     />
                 </motion.div>
                 <div

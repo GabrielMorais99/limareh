@@ -4,3 +4,8 @@ dist
 .env.local
 *.local
 .DS_Store
+
+# Gerados na build
+*.tsbuildinfo
+public/imgs/opt/
+src/generated/

@@ -1,26 +1,40 @@
-import {
-    useCallback,
-    useState,
-    type ImgHTMLAttributes,
-    type SyntheticEvent,
-} from 'react';
+import { useState, type ImgHTMLAttributes } from 'react';
+import { imgUrl, optimizedSrcSet, imageMeta } from '../lib/img';
 
-type Props = ImgHTMLAttributes<HTMLImageElement> & {
-    src: string;
+type Props = Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'srcSet'> & {
+    /** Nome do arquivo em `public/imgs/`. */
+    file: string;
 };
 
 /**
- * Não renderiza nada se a URL falhar (404, arquivo ausente) — evita ícone de imagem quebrada.
+ * Imagem responsiva (AVIF/WebP em várias larguras, com o JPEG original como
+ * fallback). Não renderiza nada se o arquivo falhar — evita ícone de imagem
+ * quebrada.
  */
-export function SafeImg({ src, alt, onError, ...rest }: Props) {
+export function SafeImg({ file, alt, onError, ...rest }: Props) {
     const [hide, setHide] = useState(false);
-    const handleError = useCallback(
-        (e: SyntheticEvent<HTMLImageElement>) => {
-            setHide(true);
-            onError?.(e);
-        },
-        [onError],
-    );
     if (hide) return null;
-    return <img src={src} alt={alt} onError={handleError} {...rest} />;
+
+    const meta = imageMeta(file);
+    return (
+        <picture style={{ display: 'contents' }}>
+            {meta ? (
+                <>
+                    <source type="image/avif" srcSet={optimizedSrcSet(file, 'avif')} sizes={rest.sizes} />
+                    <source type="image/webp" srcSet={optimizedSrcSet(file, 'webp')} sizes={rest.sizes} />
+                </>
+            ) : null}
+            <img
+                src={imgUrl(file)}
+                alt={alt}
+                width={meta?.width}
+                height={meta?.height}
+                onError={(e) => {
+                    setHide(true);
+                    onError?.(e);
+                }}
+                {...rest}
+            />
+        </picture>
+    );
 }
