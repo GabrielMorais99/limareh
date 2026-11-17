@@ -262,7 +262,7 @@ function FragranceCard({ fragrance }: { fragrance: Fragrance }) {
                                 whileHover={{ x: 4 }}
                                 whileTap={{ scale: 0.97 }}
                                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                                className="inline-flex min-h-[48px] items-center gap-3 border border-stone-900 px-6 py-3 font-label text-xs font-semibold uppercase tracking-[0.2em] text-stone-900 transition-colors duration-300 hover:bg-stone-900 hover:text-stone-50"
+                                className="inline-flex min-h-[48px] items-center gap-3 border-[0.5px] border-stone-500/45 px-6 py-3 font-label text-xs font-medium uppercase tracking-[0.2em] text-stone-600 transition-colors duration-300 hover:border-stone-700/60 hover:bg-stone-800/90 hover:text-stone-50"
                             >
                                 <InstagramIcon className="h-4 w-4" />
                                 Quero este
