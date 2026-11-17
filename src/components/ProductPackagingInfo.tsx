@@ -1,3 +1,6 @@
+import { motion } from 'motion/react';
+import { mistIn, stagger } from '../lib/motion';
+
 /**
  * Textos informativos extraídos da contra-embalagem e do rótulo do produto Limaréh.
  */
@@ -7,27 +10,27 @@ export function ContraEmbalagemContent() {
             <h2 className="font-headline text-2xl font-semibold leading-snug text-on-surface md:text-3xl">
                 Entre aromas e silêncios...
             </h2>
-            <div className="mt-8 space-y-5 font-headline text-base font-normal leading-relaxed text-on-surface md:text-lg">
-                <p>Há um instante que paira no ar,</p>
-                <p>feito brisa leve em tarde serena.</p>
-                <p>Um perfume que não apenas perfuma,</p>
-                <p>mas guarda memórias, acalma o tempo</p>
-                <p>e floresce sentimentos.</p>
-                <p className="pt-2">
+            <motion.div variants={stagger(0.16, 0.2)} className="mt-8 space-y-5 font-headline text-base font-normal leading-relaxed text-on-surface md:text-lg">
+                <motion.p variants={mistIn}>Há um instante que paira no ar,</motion.p>
+                <motion.p variants={mistIn}>feito brisa leve em tarde serena.</motion.p>
+                <motion.p variants={mistIn}>Um perfume que não apenas perfuma,</motion.p>
+                <motion.p variants={mistIn}>mas guarda memórias, acalma o tempo</motion.p>
+                <motion.p variants={mistIn}>e floresce sentimentos.</motion.p>
+                <motion.p variants={mistIn} className="pt-2">
                     <em className="text-on-surface">Limaréh</em> nasceu desse
                     desejo:
-                </p>
-                <p>tornar o cotidiano mais sensível,</p>
-                <p>a casa mais viva,</p>
-                <p>e a alma, mais presente.</p>
-                <p className="pt-2">
+                </motion.p>
+                <motion.p variants={mistIn}>tornar o cotidiano mais sensível,</motion.p>
+                <motion.p variants={mistIn}>a casa mais viva,</motion.p>
+                <motion.p variants={mistIn}>e a alma, mais presente.</motion.p>
+                <motion.p variants={mistIn} className="pt-2">
                     Neste frasco, há mais do que fragrância.
-                </p>
-                <p>Há cuidado, há intenção, há memória.</p>
-                <p>Que este aroma encontre morada em você</p>
-                <p>e transforme o espaço ao redor</p>
-                <p>em poesia que se respira.</p>
-            </div>
+                </motion.p>
+                <motion.p variants={mistIn}>Há cuidado, há intenção, há memória.</motion.p>
+                <motion.p variants={mistIn}>Que este aroma encontre morada em você</motion.p>
+                <motion.p variants={mistIn}>e transforme o espaço ao redor</motion.p>
+                <motion.p variants={mistIn}>em poesia que se respira.</motion.p>
+            </motion.div>
         </div>
     );
 }

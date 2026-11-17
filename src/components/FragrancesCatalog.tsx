@@ -1,37 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
-import { useImgsManifest, useImgSlot } from '../context/ImgsManifestContext';
-
-function useInView(options: IntersectionObserverInit = {}) {
-    const [isInView, setIsInView] = useState(false);
-    const ref = useRef<HTMLElement>(null);
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting) {
-                setIsInView(true);
-                observer.unobserve(entry.target);
-            }
-        }, options);
-
-        if (ref.current) {
-            observer.observe(ref.current);
-        }
-
-        return () => {
-            if (ref.current) {
-                observer.unobserve(ref.current);
-            }
-        };
-    }, [options]);
-
-    return [ref, isInView] as const;
-}
-
-function imgUrl(file: string): string {
-    const b = import.meta.env.BASE_URL || '/';
-    const normalized = b.endsWith('/') ? b : `${b}/`;
-    return `${normalized}imgs/${encodeURIComponent(file)}`;
-}
+import { useRef } from 'react';
+import { motion, useScroll, useTransform } from 'motion/react';
+import { SafeImg } from './SafeImg';
+import { imgUrl } from '../lib/img';
+import { EASE_SOFT, fadeUp, inViewOnce, mistIn, stagger } from '../lib/motion';
 
 interface Fragrance {
     key: string;
@@ -101,42 +72,92 @@ const fragrances: Fragrance[] = [
     },
 ];
 
-function FragranceCard({
-    fragrance,
-    index,
-}: {
-    fragrance: Fragrance;
-    index: number;
-}) {
-    const [cardRef, isInView] = useInView({ threshold: 0.18 });
-    const productSlot = useImgSlot(fragrance.productImg);
-    const backgroundSlot = useImgSlot(fragrance.backgroundImg);
+/** Partículas de "névoa" que sobem do borrifador, em loop suave. */
+function SprayMist({ accent }: { accent: string }) {
+    const particles = [
+        { x: -14, size: 10, delay: 0 },
+        { x: 6, size: 14, delay: 0.9 },
+        { x: -2, size: 8, delay: 1.8 },
+        { x: 16, size: 11, delay: 2.6 },
+        { x: -20, size: 7, delay: 3.4 },
+    ];
+    return (
+        <div
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 top-[6%] z-20 h-0 w-0"
+        >
+            {particles.map((p, i) => (
+                <motion.span
+                    key={i}
+                    className="absolute rounded-full blur-[3px]"
+                    style={{
+                        width: p.size,
+                        height: p.size,
+                        left: p.x,
+                        background: `radial-gradient(circle, rgba(255,255,255,0.95), ${accent})`,
+                    }}
+                    initial={{ opacity: 0, y: 0, scale: 0.4 }}
+                    animate={{
+                        opacity: [0, 0.85, 0],
+                        y: [0, -90, -150],
+                        x: [0, p.x * 0.8, p.x * 1.6],
+                        scale: [0.4, 1.1, 1.8],
+                    }}
+                    transition={{
+                        duration: 4.2,
+                        delay: p.delay,
+                        repeat: Infinity,
+                        repeatDelay: 0.6,
+                        ease: 'easeOut',
+                    }}
+                />
+            ))}
+        </div>
+    );
+}
+
+function FragranceCard({ fragrance }: { fragrance: Fragrance }) {
+    const ref = useRef<HTMLElement>(null);
     const isTextFirst = fragrance.align === 'left';
+
+    // Parallax: fundo, frasco e painel andam em velocidades diferentes.
+    const { scrollYProgress } = useScroll({
+        target: ref,
+        offset: ['start end', 'end start'],
+    });
+    const bgY = useTransform(scrollYProgress, [0, 1], ['-8%', '8%']);
+    const productY = useTransform(scrollYProgress, [0, 1], [70, -70]);
+    const productRotate = useTransform(
+        scrollYProgress,
+        [0, 1],
+        isTextFirst ? [-3, 3] : [3, -3],
+    );
+    const panelY = useTransform(scrollYProgress, [0, 1], [30, -30]);
 
     return (
         <article
-            ref={cardRef}
-            className={`fragrance-section relative min-h-[760px] overflow-hidden bg-[#f5f1eb] transition-all duration-1000 ease-out transform md:min-h-[700px] ${
-                isInView
-                    ? 'opacity-100 translate-y-0'
-                    : 'opacity-0 translate-y-12'
-            }`}
-            style={{ transitionDelay: `${160 + index * 90}ms` }}
+            ref={ref}
+            className="fragrance-section relative min-h-[760px] overflow-hidden bg-[#f5f1eb] md:min-h-[700px]"
         >
-            <div className="absolute inset-0 opacity-28" style={{ backgroundColor: fragrance.accent }} />
-            {backgroundSlot.shouldRender ? (
-                <img
+            <div
+                className="absolute inset-0 opacity-30"
+                style={{ backgroundColor: fragrance.accent }}
+            />
+            <motion.div
+                aria-hidden
+                className="absolute inset-x-0 -inset-y-[10%] will-change-transform"
+                style={{ y: bgY }}
+            >
+                <SafeImg
                     alt=""
-                    aria-hidden="true"
-                    className="fragrance-bg absolute inset-0 h-full w-full scale-[1.02] object-cover"
+                    className="fragrance-bg h-full w-full object-cover"
                     decoding="async"
                     loading="lazy"
                     sizes="100vw"
                     src={imgUrl(fragrance.backgroundImg)}
                     style={{ objectPosition: fragrance.backgroundPosition }}
-                    onError={backgroundSlot.onImgError}
                 />
-            ) : null}
+            </motion.div>
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(250,248,244,0.98)_0%,rgba(250,248,244,0.9)_38%,rgba(250,248,244,0.68)_72%,rgba(250,248,244,0.52)_100%)]" />
             <div className="absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-[#f7f4ee] via-[#f7f4ee]/72 via-45% to-transparent" />
             <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-[#f7f4ee] via-[#f7f4ee]/76 via-42% to-transparent" />
@@ -145,148 +166,201 @@ function FragranceCard({
                     isTextFirst ? '' : 'md:[&>*:first-child]:order-2'
                 }`}
             >
-                {productSlot.shouldRender ? (
-                    <div className="relative flex w-full justify-center">
-                        <div className="absolute inset-x-10 top-1/2 h-36 -translate-y-1/2 rounded-full bg-white/55 blur-3xl" />
-                        <img
+                <motion.div
+                    className="relative flex w-full justify-center"
+                    style={{ y: productY, rotate: productRotate }}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={inViewOnce}
+                    transition={{ duration: 1.3, ease: EASE_SOFT }}
+                >
+                    <motion.div
+                        className="absolute inset-x-10 top-1/2 h-36 -translate-y-1/2 rounded-full blur-3xl"
+                        style={{ backgroundColor: fragrance.accent }}
+                        animate={{ opacity: [0.55, 0.9, 0.55], scale: [1, 1.15, 1] }}
+                        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+                    />
+                    <motion.div
+                        className="relative w-full max-w-[21rem] sm:max-w-[24rem]"
+                        animate={{ y: [0, -10, 0] }}
+                        transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut' }}
+                        whileHover={{ scale: 1.03 }}
+                    >
+                        <SprayMist accent={fragrance.accent} />
+                        <SafeImg
                             alt={`Limaréh ${fragrance.name} — Home Spray`}
-                            className="fragrance-product relative h-auto max-h-[min(70vh,560px)] w-full max-w-[21rem] object-contain object-center drop-shadow-[0_28px_48px_rgba(62,54,43,0.22)] sm:max-w-[24rem]"
+                            className="relative h-auto max-h-[min(70vh,560px)] w-full object-contain object-center drop-shadow-[0_28px_48px_rgba(62,54,43,0.22)]"
                             decoding="async"
                             loading="lazy"
                             sizes="(min-width: 768px) 28rem, 78vw"
                             src={imgUrl(fragrance.productImg)}
-                            onError={productSlot.onImgError}
                         />
-                    </div>
-                ) : null}
-                <div className="flex flex-col justify-center text-center md:text-left">
-                    <div
-                        className={`max-w-xl space-y-6 bg-stone-50/86 px-5 py-7 shadow-[0_28px_90px_rgba(45,38,30,0.13)] backdrop-blur-md transition-all duration-1000 ease-out sm:px-8 md:bg-stone-50/80 ${
-                            isInView
-                                ? 'opacity-100 translate-y-0 scale-100'
-                                : 'opacity-0 translate-y-6 scale-[0.98]'
-                        }`}
-                        style={{ transitionDelay: `${320 + index * 110}ms` }}
+                    </motion.div>
+                </motion.div>
+                <motion.div
+                    className="flex flex-col justify-center text-center md:text-left"
+                    style={{ y: panelY }}
+                >
+                    <motion.div
+                        className="max-w-xl space-y-6 bg-stone-50/86 px-5 py-7 shadow-[0_28px_90px_rgba(45,38,30,0.13)] backdrop-blur-md sm:px-8 md:bg-stone-50/80"
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={inViewOnce}
+                        variants={stagger(0.12, 0.15)}
                     >
                         <div className="space-y-2">
-                            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-700">
+                            <motion.span
+                                variants={fadeUp}
+                                className="block text-xs font-semibold uppercase tracking-[0.2em] text-stone-700"
+                            >
                                 Linha assinatura
-                            </span>
-                            <h3 className="font-headline text-3xl italic leading-tight text-stone-950 sm:text-4xl md:text-5xl">
+                            </motion.span>
+                            <motion.h3
+                                variants={mistIn}
+                                className="font-headline text-3xl italic leading-tight text-stone-950 sm:text-4xl md:text-5xl"
+                            >
                                 {fragrance.name}
-                            </h3>
-                            <p className="font-label text-xs uppercase tracking-[0.25em] text-stone-700">
+                            </motion.h3>
+                            <motion.p
+                                variants={fadeUp}
+                                className="font-label text-xs uppercase tracking-[0.25em] text-stone-700"
+                            >
                                 {fragrance.subtitle}
-                            </p>
+                            </motion.p>
                         </div>
-                        <p className="font-body text-base font-light leading-[1.75] text-stone-800 sm:text-lg">
+                        <motion.p
+                            variants={fadeUp}
+                            className="font-body text-base font-light leading-[1.75] text-stone-800 sm:text-lg"
+                        >
                             {fragrance.description}
-                        </p>
-                        <div className="flex flex-wrap justify-center gap-2 md:justify-start">
+                        </motion.p>
+                        <motion.div
+                            variants={stagger(0.1)}
+                            className="flex flex-wrap justify-center gap-2 md:justify-start"
+                        >
                             {fragrance.notes.map((note) => (
-                                <div
+                                <motion.div
                                     key={note}
+                                    variants={fadeUp}
+                                    whileHover={{ y: -3, backgroundColor: fragrance.accent }}
+                                    transition={{ type: 'spring', stiffness: 300, damping: 18 }}
                                     className="bg-stone-100/95 px-5 py-2 shadow-sm"
                                 >
                                     <span className="text-[0.6875rem] font-bold uppercase tracking-widest text-stone-800">
                                         {note}
                                     </span>
-                                </div>
+                                </motion.div>
                             ))}
-                        </div>
-                    </div>
-                </div>
+                        </motion.div>
+                    </motion.div>
+                </motion.div>
             </div>
         </article>
     );
 }
-function CollectionShowcase() {
-    const [showcaseRef, isInView] = useInView({ threshold: 0.18 });
-    const catalogSlot = useImgSlot('catalogo-home-sprays.jpeg');
 
-    if (!catalogSlot.shouldRender) return null;
+function CollectionShowcase() {
+    const ref = useRef<HTMLElement>(null);
+    const { scrollYProgress } = useScroll({
+        target: ref,
+        offset: ['start end', 'center center'],
+    });
+    const scale = useTransform(scrollYProgress, [0, 1], [0.86, 1]);
+    const radius = useTransform(scrollYProgress, [0, 1], [48, 0]);
 
     return (
         <section
-            ref={showcaseRef}
-            className={`relative isolate overflow-hidden bg-[#f5f1eb] transition-all duration-1000 ease-out transform ${
-                isInView
-                    ? 'opacity-100 translate-y-0'
-                    : 'opacity-0 translate-y-12'
-            }`}
-            style={{ transitionDelay: '520ms' }}
+            ref={ref}
+            className="relative isolate overflow-hidden bg-[#f5f1eb]"
             aria-label="Exposição completa dos produtos Limaréh"
         >
             <div className="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-[#f7f4ee] via-[#f7f4ee]/70 to-transparent" />
             <div className="mx-auto flex min-h-[860px] max-w-screen-2xl flex-col items-center justify-center gap-10 px-4 py-24 text-center sm:px-6 md:px-8 md:py-32 lg:px-14">
-                <div className="relative z-10 max-w-2xl space-y-4">
-                    <span className="text-xs font-semibold uppercase tracking-[0.24em] text-outline">
+                <motion.div
+                    className="relative z-10 max-w-2xl space-y-4"
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={inViewOnce}
+                    variants={stagger(0.15)}
+                >
+                    <motion.span
+                        variants={fadeUp}
+                        className="block text-xs font-semibold uppercase tracking-[0.24em] text-outline"
+                    >
                         Coleção completa
-                    </span>
-                    <h2 className="font-headline text-3xl italic leading-tight text-stone-950 sm:text-4xl md:text-5xl">
+                    </motion.span>
+                    <motion.h2
+                        variants={mistIn}
+                        className="font-headline text-3xl italic leading-tight text-stone-950 sm:text-4xl md:text-5xl"
+                    >
                         As quatro assinaturas Limaréh em exposição
-                    </h2>
-                    <p className="mx-auto max-w-xl font-body text-base font-light leading-[1.8] text-on-surface-variant">
+                    </motion.h2>
+                    <motion.p
+                        variants={fadeUp}
+                        className="mx-auto max-w-xl font-body text-base font-light leading-[1.8] text-on-surface-variant"
+                    >
                         Brisa Lilás, Campo dos Sonhos, Luz da Tarde e Jardim de
                         Cristal reunidos em uma apresentação suave, com brilho
                         perolado e acabamento dourado.
-                    </p>
-                </div>
-                <div className="relative z-10 w-full max-w-[34rem]">
+                    </motion.p>
+                </motion.div>
+                <motion.div
+                    className="relative z-10 w-full max-w-[34rem]"
+                    style={{ scale }}
+                >
                     <div className="absolute inset-8 rounded-full bg-white/70 blur-3xl" />
-                    <img
-                        alt="Coleção completa de Home Sprays Limaréh"
-                        className="relative h-auto max-h-[min(82vh,780px)] w-full object-cover object-center shadow-[0_30px_90px_rgba(69,58,43,0.2)]"
-                        decoding="async"
-                        loading="lazy"
-                        sizes="(min-width: 768px) 34rem, 92vw"
-                        src={imgUrl('catalogo-home-sprays.jpeg')}
-                        onError={catalogSlot.onImgError}
-                    />
-                </div>
+                    <motion.div
+                        className="relative overflow-hidden shadow-[0_30px_90px_rgba(69,58,43,0.2)]"
+                        style={{ borderRadius: radius }}
+                    >
+                        <SafeImg
+                            alt="Coleção completa de Home Sprays Limaréh"
+                            className="h-auto max-h-[min(82vh,780px)] w-full object-cover object-center"
+                            decoding="async"
+                            loading="lazy"
+                            sizes="(min-width: 768px) 34rem, 92vw"
+                            src={imgUrl('catalogo-home-sprays.jpeg')}
+                        />
+                    </motion.div>
+                </motion.div>
             </div>
         </section>
     );
 }
 
 export function FragrancesCatalog() {
-    const [sectionRef] = useInView({ threshold: 0.05 });
-    const { status } = useImgsManifest();
-
     return (
         <section
             id="fragrancias"
-            ref={sectionRef}
             className="relative scroll-mt-[calc(5.25rem+env(safe-area-inset-top,0px))] bg-[#f7f4ee]"
         >
             <div className="relative z-10">
-                <div className="mx-auto max-w-screen-xl px-4 py-16 text-center sm:px-6 md:px-8 md:py-20">
-                    <h2 className="font-headline text-3xl leading-tight text-on-surface sm:text-4xl md:text-5xl">
+                <motion.div
+                    className="mx-auto max-w-screen-xl px-4 py-16 text-center sm:px-6 md:px-8 md:py-20"
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={inViewOnce}
+                    variants={stagger(0.15)}
+                >
+                    <motion.h2
+                        variants={mistIn}
+                        className="font-headline text-3xl leading-tight text-on-surface sm:text-4xl md:text-5xl"
+                    >
                         Coleção Home Sprays
-                    </h2>
-                    <p className="mx-auto mt-4 max-w-[42rem] font-body text-on-surface-variant">
-                        Quatro fragrâncias assinadas para transformar cada ambiente
-                        em refúgio. Escolha a que ressoa com o seu momento.
-                    </p>
-                </div>
-                {status === 'loading' ? (
-                    <div className="py-16 text-center">
-                        <p className="font-body text-sm text-on-surface-variant">
-                            Carregando fragrâncias...
-                        </p>
-                    </div>
-                ) : (
-                    <div>
-                        {fragrances.map((fragrance, index) => (
-                            <FragranceCard
-                                key={fragrance.key}
-                                fragrance={fragrance}
-                                index={index}
-                            />
-                        ))}
-                        <CollectionShowcase />
-                    </div>
-                )}
+                    </motion.h2>
+                    <motion.p
+                        variants={fadeUp}
+                        className="mx-auto mt-4 max-w-[42rem] font-body text-on-surface-variant"
+                    >
+                        Quatro fragrâncias assinadas para transformar cada
+                        ambiente em refúgio. Escolha a que ressoa com o seu
+                        momento.
+                    </motion.p>
+                </motion.div>
+                {fragrances.map((fragrance) => (
+                    <FragranceCard key={fragrance.key} fragrance={fragrance} />
+                ))}
+                <CollectionShowcase />
             </div>
         </section>
     );

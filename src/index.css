@@ -7,15 +7,6 @@ html {
     -webkit-text-size-adjust: 100%;
 }
 
-.material-symbols-outlined {
-    font-variation-settings:
-        'FILL' 0,
-        'wght' 300,
-        'GRAD' 0,
-        'opsz' 24;
-    font-size: 20px;
-}
-
 body {
     @apply font-body bg-background text-on-surface overflow-x-hidden;
     -webkit-tap-highlight-color: rgba(47, 51, 49, 0.08);
@@ -50,10 +41,6 @@ body::after {
     animation: fragrance-bg-breathe 18s ease-in-out infinite alternate;
 }
 
-.fragrance-product {
-    animation: fragrance-product-breathe 9s ease-in-out infinite;
-}
-
 @keyframes site-soft-glow {
     from {
         opacity: 0.55;
@@ -78,21 +65,9 @@ body::after {
     }
 }
 
-@keyframes fragrance-product-breathe {
-    0%,
-    100% {
-        transform: translate3d(0, 0, 0);
-    }
-
-    50% {
-        transform: translate3d(0, -0.16rem, 0);
-    }
-}
-
 @media (prefers-reduced-motion: reduce) {
     body::after,
-    .fragrance-bg,
-    .fragrance-product {
+    .fragrance-bg {
         animation: none;
     }
 }
